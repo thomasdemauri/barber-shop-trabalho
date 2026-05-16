@@ -11,7 +11,7 @@ export default function DateTime() {
 
   return (
     <>
-      <div className="w-full max-w-screen-md mx-auto p-4 sm:p-8 lg:p-10 flex flex-col min-h-screen pb-24">
+      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-24">
         <BackBar title="Data e Horário" onBack={() => nav(-1 as any)} />
 
         <div className="mt-6 flex flex-col gap-8">

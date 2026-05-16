@@ -10,14 +10,14 @@ export default function Profile() {
 
   const items = [
     { Icon: IconUser, label: 'Dados Pessoais' },
-    { Icon: IconScissors, label: 'Prefer+¬ncias de Corte' },
-    { Icon: IconBell, label: 'Notifica+º+Áes' },
+    { Icon: IconScissors, label: 'Preferências de Corte' },
+    { Icon: IconBell, label: 'Notificações' },
     { Icon: IconCreditCard, label: 'Formas de Pagamento' },
     { Icon: IconHelpCircle, label: 'Central de Ajuda' },
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
+    <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
           <h1 className="mb-6 sm:mb-8 font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-cream">Perfil</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -37,7 +37,7 @@ export default function Profile() {
                 </div>
                 <div className="min-w-0 lg:mt-2">
                   <p className="mb-0.5 font-serif text-xl sm:text-2xl font-semibold text-cream truncate">
-                    {user?.nome || 'Jo+úo Silva'}
+                    {user?.nome || 'João Silva'}
                   </p>
                   <p className="font-sans text-sm text-cream3 truncate">
                     {user?.email || 'joao.silva@email.com'}

@@ -20,7 +20,7 @@ export default function Services() {
 
   return (
     <>
-      <div className="w-full max-w-5xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-24">
+      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-24">
         <BackBar title="Escolha o Serviço" onBack={() => nav(-1 as any)} />
 
         {/* Search */}

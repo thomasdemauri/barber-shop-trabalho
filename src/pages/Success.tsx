@@ -16,7 +16,7 @@ export default function Success() {
 
   return (
     <>
-      <div className="w-full max-w-md mx-auto p-6 sm:p-12 flex flex-col items-center justify-center min-h-[80vh]">
+      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col items-center justify-center min-h-[80vh]">
           {/* Success circle */}
           <div
             className={`animate-scale-in ${showGlow ? 'animate-glow-ring' : ''} mb-8 sm:mb-10 flex items-center justify-center rounded-full`}
@@ -34,7 +34,7 @@ export default function Success() {
           <div className="animate-fade-up mb-8 sm:mb-10 w-full text-center" style={{ animationDelay: '0.2s' }}>
             <div className="mb-3 font-serif text-4xl sm:text-5xl font-bold text-cream">Agendado!</div>
             <div className="font-sans text-base sm:text-lg leading-relaxed text-cream3">
-              Confirma+º+úo enviada por SMS e e-mail. At+® l+í! ­ƒæï
+              Confirmação enviada por SMS e e-mail. Até logo!
             </div>
           </div>
 
@@ -45,8 +45,8 @@ export default function Success() {
           >
             <div className="flex flex-col gap-4">
               {[
-                ['Servi+ºo', appt.svc],
-                ['Data', `${appt.d} ${appt.mon} -À ${appt.time}`],
+                ['Serviço', appt.svc],
+                ['Data', `${appt.d} ${appt.mon} · ${appt.time}`],
                 ['Barbeiro', appt.barber],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between border-b pb-4" style={{ borderColor: C.b1 }}>
@@ -64,7 +64,7 @@ export default function Success() {
           {/* Buttons */}
           <div className="animate-fade-up flex w-full flex-col gap-3" style={{ animationDelay: '0.5s' }}>
             <Btn onClick={() => nav('/appointments')} style={{ height: 56, fontSize: 16 }}>Ver Meus Agendamentos</Btn>
-            <Btn variant="secondary" onClick={() => nav('/home')} style={{ height: 56, fontSize: 16 }}>Voltar ao In+¡cio</Btn>
+            <Btn variant="secondary" onClick={() => nav('/home')} style={{ height: 56, fontSize: 16 }}>Voltar ao Início</Btn>
           </div>
       </div>
     </>

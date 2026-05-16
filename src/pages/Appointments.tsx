@@ -10,19 +10,31 @@ export default function Appointments() {
   const nav = useNavigate();
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
+    <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
 
           <div className="mb-6 sm:mb-8">
             <div className="flex items-end justify-between mb-6">
               <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-cream">Meus Agendamentos</h1>
-              <div className="hidden sm:block">
-                <Btn variant="secondary" onClick={() => nav('/services')}>
-                  <span className="flex items-center gap-1.5"><IconPlus size={14} /> Novo</span>
-                </Btn>
-              </div>
+              <button
+                className="tap hidden sm:flex items-center gap-2 rounded-xl px-4 py-2.5 font-sans text-sm font-semibold transition-all"
+                onClick={() => nav('/services')}
+                style={{
+                  background: `linear-gradient(135deg, ${C.gold} 0%, ${C.gold2} 100%)`,
+                  color: '#0b0907',
+                  boxShadow: `0 4px 16px ${C.gold}35`,
+                }}
+              >
+                <span
+                  className="flex h-5 w-5 items-center justify-center rounded-full"
+                  style={{ background: 'rgba(0,0,0,0.18)' }}
+                >
+                  <IconPlus size={12} />
+                </span>
+                Novo Agendamento
+              </button>
             </div>
             <div className="flex" style={{ borderBottom: `1px solid ${C.b1}` }}>
-              {([['upcoming', 'Pr+¦ximos'], ['history', 'Hist+¦rico']] as const).map(([id, lbl]) => (
+              {([['upcoming', 'Próximos'], ['history', 'Histórico']] as const).map(([id, lbl]) => (
                 <button
                   key={id}
                   className="tap flex-1 sm:flex-none sm:px-6 border-none bg-transparent py-3 font-sans text-sm transition-all duration-150 hover:bg-s2"
@@ -56,7 +68,7 @@ export default function Appointments() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="mb-0.5 font-sans text-sm font-semibold text-cream truncate">{appt.svc}</p>
-                  <p className="mb-2 font-sans text-xs text-cream3">{appt.barber} -À {appt.time}</p>
+                  <p className="mb-2 font-sans text-xs text-cream3">{appt.barber} · {appt.time}</p>
                   <div className="flex items-center gap-3">
                     <Badge status={appt.status} />
                     <span className="font-sans text-xs font-bold text-gold2 tabular-nums">R$ {appt.price}</span>
@@ -70,8 +82,21 @@ export default function Appointments() {
           </div>
 
           <div className="mt-6 sm:hidden">
-            <Btn variant="secondary" onClick={() => nav('/services')}>
-              <span className="flex items-center justify-center gap-1.5"><IconPlus size={14} /> Novo Agendamento</span>
+            <Btn
+              onClick={() => nav('/services')}
+              style={{
+                height: 56,
+                borderRadius: 14,
+                background: `linear-gradient(135deg, ${C.gold} 0%, ${C.gold2} 100%)`,
+                boxShadow: `0 4px 20px ${C.gold}35`,
+              }}
+            >
+              <span className="flex items-center justify-center gap-2.5">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: 'rgba(0,0,0,0.18)' }}>
+                  <IconPlus size={14} />
+                </span>
+                <span style={{ fontWeight: 700 }}>Novo Agendamento</span>
+              </span>
             </Btn>
           </div>
     </div>
