@@ -1,5 +1,5 @@
 /**
- * SVG Icon library ÔÇö replaces all emojis with clean, professional icons.
+ * SVG Icon library Ã”Ã‡Ã¶ replaces all emojis with clean, professional icons.
  * Each icon is a functional component that accepts size and className.
  */
 import type { CSSProperties } from 'react';

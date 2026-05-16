@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const users = readUsers();
     const newUser: User = {
       id: Date.now().toString(36),
-      nome: u.nome || 'Usuário',
+      nome: u.nome || 'UsuÃ¡rio',
       email: u.email || '',
       telefone: u.telefone || '',
       senha: u.senha || '',

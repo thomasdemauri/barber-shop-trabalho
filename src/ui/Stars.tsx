@@ -9,7 +9,7 @@ export function Stars({ rating, size = 14 }: { rating: number; size?: number }) 
             fontSize: size,
           }}
         >
-          Ôÿà
+          Ã”Ã¿Ã 
         </span>
       ))}
     </div>

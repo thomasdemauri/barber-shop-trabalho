@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 export function BackBar({ title, onBack }: { title: string; onBack: () => void }) {
   return (
     <div className="flex items-center justify-between p-4 bg-gray-800 border-b border-gray-700">
-      <button onClick={onBack} className="text-xl">←</button>
+      <button onClick={onBack} className="text-xl">â†</button>
       <h2 className="text-lg font-semibold">{title}</h2>
       <div className="w-6" />
     </div>
@@ -12,9 +12,9 @@ export function BackBar({ title, onBack }: { title: string; onBack: () => void }
 export function BottomNav({ current, onNav }: { current: string; onNav: (id: string) => void }) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around p-3">
-      <button onClick={() => onNav('home')} className={`flex-1 text-center ${current === 'home' ? 'text-yellow-400' : 'text-gray-300'}`}>🏠</button>
-      <button onClick={() => onNav('appointments')} className={`flex-1 text-center ${current === 'appointments' ? 'text-yellow-400' : 'text-gray-300'}`}>📅</button>
-      <button onClick={() => onNav('profile')} className={`flex-1 text-center ${current === 'profile' ? 'text-yellow-400' : 'text-gray-300'}`}>👤</button>
+      <button onClick={() => onNav('home')} className={`flex-1 text-center ${current === 'home' ? 'text-yellow-400' : 'text-gray-300'}`}>ðŸ </button>
+      <button onClick={() => onNav('appointments')} className={`flex-1 text-center ${current === 'appointments' ? 'text-yellow-400' : 'text-gray-300'}`}>ðŸ“…</button>
+      <button onClick={() => onNav('profile')} className={`flex-1 text-center ${current === 'profile' ? 'text-yellow-400' : 'text-gray-300'}`}>ðŸ‘¤</button>
     </div>
   );
 }

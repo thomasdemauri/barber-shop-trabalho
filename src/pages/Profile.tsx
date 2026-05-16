@@ -10,8 +10,8 @@ export default function Profile() {
 
   const items = [
     { Icon: IconUser, label: 'Dados Pessoais' },
-    { Icon: IconScissors, label: 'Prefer+¨ncias de Corte' },
-    { Icon: IconBell, label: 'Notifica+∫+¡es' },
+    { Icon: IconScissors, label: 'Prefer+¬¨ncias de Corte' },
+    { Icon: IconBell, label: 'Notifica+¬∫+√Åes' },
     { Icon: IconCreditCard, label: 'Formas de Pagamento' },
     { Icon: IconHelpCircle, label: 'Central de Ajuda' },
   ];
@@ -37,7 +37,7 @@ export default function Profile() {
                 </div>
                 <div className="min-w-0 lg:mt-2">
                   <p className="mb-0.5 font-serif text-xl sm:text-2xl font-semibold text-cream truncate">
-                    {user?.nome || 'Jo+˙o Silva'}
+                    {user?.nome || 'Jo+√∫o Silva'}
                   </p>
                   <p className="font-sans text-sm text-cream3 truncate">
                     {user?.email || 'joao.silva@email.com'}

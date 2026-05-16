@@ -11,7 +11,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 }
 
 const ITEMS: { id: string; label: string; Icon: typeof IconHome }[] = [
-  { id: 'home', label: 'In+¡cio', Icon: IconHome },
+  { id: 'home', label: 'In+Â¡cio', Icon: IconHome },
   { id: 'services', label: 'Agendar', Icon: IconScissors },
   { id: 'appointments', label: 'Agenda', Icon: IconCalendar },
   { id: 'profile', label: 'Perfil', Icon: IconUser },

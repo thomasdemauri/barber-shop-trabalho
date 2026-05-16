@@ -1,8 +1,8 @@
 const STATUS_MAP: Record<string, { bg: string; c: string; label: string }> = {
   confirmed: { bg: 'rgba(74,157,110,0.14)', c: '#4a9d6e', label: 'Confirmado' },
   pending:   { bg: 'rgba(196,145,42,0.12)', c: '#d4a84c', label: 'Pendente' },
-  done:      { bg: '#262320',               c: '#6a5c44', label: 'Conclu+¡do' },
-  next:      { bg: 'rgba(196,145,42,0.18)', c: '#d4a84c', label: 'Pr+¦ximo' },
+  done:      { bg: '#262320',               c: '#6a5c44', label: 'Conclu+Â¡do' },
+  next:      { bg: 'rgba(196,145,42,0.18)', c: '#d4a84c', label: 'Pr+Â¦ximo' },
   upcoming:  { bg: '#1d1a16',               c: '#6a5c44', label: 'Agendado' },
   break:     { bg: '#1d1a16',               c: '#6a5c44', label: 'Pausa' },
   canceled:  { bg: 'rgba(192,80,80,0.12)',  c: '#c05050', label: 'Cancelado' },

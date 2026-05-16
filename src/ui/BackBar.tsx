@@ -15,7 +15,7 @@ export function BackBar({
         className="tap flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-s3 border-none hover:bg-s4 transition-colors"
         onClick={onBack}
       >
-        <span className="text-xl leading-none text-cream">‘Â…</span>
+        <span className="text-xl leading-none text-cream">√î√•√â</span>
       </button>
       <span className="flex-1 font-sans text-lg sm:text-xl font-semibold text-cream text-center sm:text-left">
         {title}

@@ -22,7 +22,7 @@ export default function Appointments() {
               </div>
             </div>
             <div className="flex" style={{ borderBottom: `1px solid ${C.b1}` }}>
-              {([['upcoming', 'Pr+¦ximos'], ['history', 'Hist+¦rico']] as const).map(([id, lbl]) => (
+              {([['upcoming', 'Pr+Â¦ximos'], ['history', 'Hist+Â¦rico']] as const).map(([id, lbl]) => (
                 <button
                   key={id}
                   className="tap flex-1 sm:flex-none sm:px-6 border-none bg-transparent py-3 font-sans text-sm transition-all duration-150 hover:bg-s2"
@@ -56,7 +56,7 @@ export default function Appointments() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="mb-0.5 font-sans text-sm font-semibold text-cream truncate">{appt.svc}</p>
-                  <p className="mb-2 font-sans text-xs text-cream3">{appt.barber} -À {appt.time}</p>
+                  <p className="mb-2 font-sans text-xs text-cream3">{appt.barber} -Ã€ {appt.time}</p>
                   <div className="flex items-center gap-3">
                     <Badge status={appt.status} />
                     <span className="font-sans text-xs font-bold text-gold2 tabular-nums">R$ {appt.price}</span>

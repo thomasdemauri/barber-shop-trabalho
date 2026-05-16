@@ -10,7 +10,7 @@ export function initializeTestData() {
     const testUsers = [
       {
         id: 'u1',
-        nome: 'João Silva',
+        nome: 'JoÃ£o Silva',
         email: 'joao@test.com',
         telefone: '11999999999',
         tipo: 'cliente',
@@ -19,7 +19,7 @@ export function initializeTestData() {
       },
       {
         id: 'b1',
-        nome: 'João Mestre',
+        nome: 'JoÃ£o Mestre',
         email: 'joao.mestre@barbershop.com',
         telefone: '11988888888',
         tipo: 'barbeiro',
@@ -41,7 +41,7 @@ export function initializeTestData() {
 }
 
 export const TEST_CREDENTIALS = {
-  CLIENT: { email: 'joao@test.com', password: '123456', name: 'João Silva' },
-  BARBER1: { email: 'joao.mestre@barbershop.com', password: '123456', name: 'João Mestre' },
+  CLIENT: { email: 'joao@test.com', password: '123456', name: 'JoÃ£o Silva' },
+  BARBER1: { email: 'joao.mestre@barbershop.com', password: '123456', name: 'JoÃ£o Mestre' },
   BARBER2: { email: 'carlos@barbershop.com', password: '123456', name: 'Carlos Neto' },
 };

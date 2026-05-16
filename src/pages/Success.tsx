@@ -34,7 +34,7 @@ export default function Success() {
           <div className="animate-fade-up mb-8 sm:mb-10 w-full text-center" style={{ animationDelay: '0.2s' }}>
             <div className="mb-3 font-serif text-4xl sm:text-5xl font-bold text-cream">Agendado!</div>
             <div className="font-sans text-base sm:text-lg leading-relaxed text-cream3">
-              Confirma+º+úo enviada por SMS e e-mail. At+® l+í! ­ƒæï
+              Confirma+Âº+Ãºo enviada por SMS e e-mail. At+Â® l+Ã­! Â­Æ’Ã¦Ã¯
             </div>
           </div>
 
@@ -45,8 +45,8 @@ export default function Success() {
           >
             <div className="flex flex-col gap-4">
               {[
-                ['Servi+ºo', appt.svc],
-                ['Data', `${appt.d} ${appt.mon} -À ${appt.time}`],
+                ['Servi+Âºo', appt.svc],
+                ['Data', `${appt.d} ${appt.mon} -Ã€ ${appt.time}`],
                 ['Barbeiro', appt.barber],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between border-b pb-4" style={{ borderColor: C.b1 }}>
@@ -64,7 +64,7 @@ export default function Success() {
           {/* Buttons */}
           <div className="animate-fade-up flex w-full flex-col gap-3" style={{ animationDelay: '0.5s' }}>
             <Btn onClick={() => nav('/appointments')} style={{ height: 56, fontSize: 16 }}>Ver Meus Agendamentos</Btn>
-            <Btn variant="secondary" onClick={() => nav('/home')} style={{ height: 56, fontSize: 16 }}>Voltar ao In+¡cio</Btn>
+            <Btn variant="secondary" onClick={() => nav('/home')} style={{ height: 56, fontSize: 16 }}>Voltar ao In+Â¡cio</Btn>
           </div>
       </div>
     </>

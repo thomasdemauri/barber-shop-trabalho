@@ -40,7 +40,7 @@ export default function ForgotPassword() {
 
           <div className="hidden lg:flex mb-6 mt-2 items-center">
             <button onClick={() => nav('/login')} className="tap text-gold2 hover:text-gold flex items-center gap-2 font-sans text-sm font-medium transition-colors">
-              <span className="text-lg leading-none">ÔÇ¦</span> Voltar ao Login
+              <span className="text-lg leading-none">Ã”Ã‡Â¦</span> Voltar ao Login
             </button>
           </div>
 
@@ -51,7 +51,7 @@ export default function ForgotPassword() {
               </div>
               <h3 className="mb-3 font-serif text-2xl font-bold text-cream text-center">Link Enviado</h3>
               <p className="mb-10 font-sans text-sm text-cream3 text-center leading-relaxed px-4">
-                Enviamos as instru+º+Áes de recupera+º+úo para o seu e-mail. Verifique a caixa de spam.
+                Enviamos as instru+Âº+Ães de recupera+Âº+Ãºo para o seu e-mail. Verifique a caixa de spam.
               </p>
               <Btn onClick={() => nav('/login')} variant="secondary">Voltar ao Login</Btn>
             </div>
@@ -61,7 +61,7 @@ export default function ForgotPassword() {
                 Esqueceu a senha?
               </h3>
               <p className="mb-10 font-sans text-sm text-cream3 text-center leading-relaxed">
-                Digite seu e-mail abaixo e enviaremos um link seguro para voc+¬ redefinir sua senha.
+                Digite seu e-mail abaixo e enviaremos um link seguro para voc+Â¬ redefinir sua senha.
               </p>
               
               <Inp label="E-mail" value={email} onChange={setEmail} type="email" placeholder="nome@email.com" autoFocus />
