@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { initializeTestData } from '../services/seed';
+import { store, retrieve, remove, purgeExpired } from '../services/storage';
 
 type User = {
   id: string;
@@ -21,7 +22,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const USERS_KEY = 'barbershop_users';
-const CURR_KEY = 'barbershop_currentUser';
+const SESSION_KEY = 'barbershop_session';
 
 function readUsers(): User[] {
   try {
@@ -38,21 +39,25 @@ function writeUsers(users: User[]) {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     initializeTestData();
-    try {
-      return JSON.parse(localStorage.getItem(CURR_KEY) || 'null');
-    } catch {
-      return null;
-    }
+    purgeExpired(); // Clean up any expired data on load
+    return retrieve<User>(SESSION_KEY);
   });
 
   useEffect(() => {
-    if (user) localStorage.setItem(CURR_KEY, JSON.stringify(user));
-    else localStorage.removeItem(CURR_KEY);
+    if (user) {
+      store(SESSION_KEY, user); // Save with 8h TTL
+    } else {
+      remove(SESSION_KEY);
+    }
   }, [user]);
 
   const login = (identifier: string, senha: string, mode = 'client') => {
     const users = readUsers();
-    const found = users.find(u => (u.email === identifier || u.telefone === identifier) && u.senha === senha && (mode === 'client' ? u.tipo !== 'barbeiro' : u.tipo === 'barbeiro'));
+    const found = users.find(u =>
+      (u.email === identifier || u.telefone === identifier) &&
+      u.senha === senha &&
+      (mode === 'client' ? u.tipo !== 'barbeiro' : u.tipo === 'barbeiro')
+    );
     if (found) {
       setUser(found);
       return true;

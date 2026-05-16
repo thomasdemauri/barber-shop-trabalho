@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframes ÔÇö Barbearia Navalha de Ouro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #fffbee;
+      --bg: #1a1a1c;
+      --border: #2e2e30;
+      --ink: #1a1a1a;
+      --ink2: #555;
+      --ink3: #999;
+      --line: #e4e4dc;
+      --field: #f8f8f5;
+      --phone-w: 252px;
+      --phone-h: 524px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Caveat', cursive; min-height: 100vh; }
+
+    /* ÔöÇÔöÇ HEADER ÔöÇÔöÇ */
+    .hdr {
+      position: sticky; top: 0; z-index: 200;
+      background: #111113; border-bottom: 1px solid var(--border);
+      height: 48px; display: flex; align-items: center;
+      padding: 0 20px; gap: 14px;
+    }
+    .hdr-logo { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: .05em; white-space: nowrap; }
+    .hdr-sep { width: 1px; height: 22px; background: var(--border); }
+    .hdr-tabs { display: flex; gap: 3px; }
+    .hdr-tab {
+      font-family: 'Space Mono', monospace; font-size: 9px;
+      color: #666; padding: 4px 10px; border-radius: 4px;
+      border: 1px solid transparent; text-decoration: none;
+      transition: all .15s; cursor: pointer; background: none;
+    }
+    .hdr-tab:hover { color: var(--gold); border-color: #3a3a3c; }
+    .hdr-tab.active { color: var(--gold); border-color: var(--gold); background: rgba(201,168,76,.08); }
+    .hdr-right { margin-left: auto; }
+    .twk-btn {
+      font-family: 'Space Mono', monospace; font-size: 9px;
+      color: #666; padding: 4px 10px; border-radius: 4px;
+      border: 1px solid #333; background: none; cursor: pointer; transition: all .15s;
+    }
+    .twk-btn:hover { color: #ccc; border-color: #555; }
+
+    /* ÔöÇÔöÇ CANVAS ÔöÇÔöÇ */
+    .canvas { padding: 40px 40px 60px; }
+
+    /* ÔöÇÔöÇ MODULE SECTION ÔöÇÔöÇ */
+    .mod { margin-bottom: 64px; scroll-margin-top: 60px; }
+    .mod-tag { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--gold); letter-spacing: .18em; text-transform: uppercase; margin-bottom: 4px; }
+    .mod-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .mod-desc { font-size: 14px; color: #666; margin-bottom: 24px; }
+    .mod-row { display: flex; align-items: flex-start; gap: 18px; overflow-x: auto; padding-bottom: 12px; }
+    .mod-row::-webkit-scrollbar { height: 4px; }
+    .mod-row::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    /* ÔöÇÔöÇ PHONE WRAP ÔöÇÔöÇ */
+    .pw { display: flex; flex-direction: column; align-items: center; gap: 9px; flex-shrink: 0; }
+    .pw-label { font-family: 'Space Mono', monospace; font-size: 8px; color: #555; letter-spacing: .1em; text-align: center; }
+    .pw-note { font-size: 13px; color: var(--gold); text-align: center; max-width: var(--phone-w); line-height: 1.4; }
+
+    /* ÔöÇÔöÇ PHONE FRAME ÔöÇÔöÇ */
+    .ph {
+      width: var(--phone-w); height: var(--phone-h);
+      background: #fff; border-radius: 30px;
+      border: 2.5px solid #1e1e1e;
+      overflow: hidden; position: relative;
+      box-shadow: 0 0 0 1px #3a3a3c, 0 16px 48px rgba(0,0,0,.5);
+      display: flex; flex-direction: column;
+      transition: width .3s, height .3s;
+    }
+    .ph-sb {
+      height: 24px; background: #f9f9f6; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px; flex-shrink: 0;
+    }
+    .ph-time { font-family: 'Space Mono', monospace; font-size: 8px; color: #333; font-weight: 700; }
+    .ph-icons { font-size: 8px; color: #333; letter-spacing: 1px; }
+    .ph-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 52px; height: 10px; background: #1e1e1e; border-radius: 0 0 10px 10px; }
+    .ph-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .ph-nav { height: 46px; background: #f9f9f6; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-around; flex-shrink: 0; }
+    .ni { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .ni-ic { width: 18px; height: 12px; background: #ccc; border-radius: 3px; }
+    .ni-ic.on { background: var(--gold); }
+    .ni-lb { font-size: 7px; color: #bbb; }
+    .ni-lb.on { color: var(--gold); }
+
+    /* ÔöÇÔöÇ FLOW ARROW ÔöÇÔöÇ */
+    .fa { display: flex; align-items: center; justify-content: center; color: #3a3a3c; font-size: 20px; font-family: 'Space Mono', monospace; align-self: center; flex-shrink: 0; margin-top: -40px; }
+
+    /* ÔöÇÔöÇ WIREFRAME ATOMS ÔöÇÔöÇ */
+    .wbody { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .wbody.pt { padding-top: 20px; }
+    .wbar { height: 40px; background: #f9f9f6; border-bottom: 1px solid var(--line); display: flex; align-items: center; padding: 0 12px; gap: 6px; flex-shrink: 0; }
+    .wbar-back { width: 14px; height: 12px; flex-shrink: 0; border-left: 2px solid #333; border-top: 2px solid #333; transform: rotate(-45deg) translateY(2px); }
+    .wbar-title { font-size: 13px; font-weight: 700; color: var(--ink); flex: 1; text-align: center; }
+    .wbar-r { font-size: 10px; color: var(--gold); flex-shrink: 0; }
+    .wlogo { width: 52px; height: 52px; border-radius: 50%; border: 2.5px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--ink); align-self: center; }
+    .wtitle { font-size: 17px; font-weight: 700; color: var(--ink); text-align: center; }
+    .wsub { font-size: 10px; color: var(--ink3); text-align: center; }
+    .wlabel { font-size: 9px; color: var(--ink3); margin-bottom: -4px; }
+    .wfield { height: 32px; border: 1.5px dashed #aaa; border-radius: 7px; padding: 0 10px; display: flex; align-items: center; color: #bbb; font-size: 12px; background: var(--field); font-family: 'Caveat', cursive; }
+    .wfield.f { border-style: solid; border-color: var(--ink); color: var(--ink); }
+    .wbtn { height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; background: var(--ink); flex-shrink: 0; }
+    .wbtn.g { background: var(--gold); color: var(--ink); }
+    .wbtn.o { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); }
+    .wbtn.sm { height: 30px; font-size: 11px; }
+    .wlink { text-align: center; font-size: 11px; color: var(--ink3); }
+    .wlink span { color: var(--gold); font-weight: 700; }
+    .wdiv { height: 1px; background: var(--line); flex-shrink: 0; }
+    .wsec { font-size: 12px; font-weight: 700; color: var(--ink); flex-shrink: 0; }
+    .wline { height: 7px; background: #e4e4dc; border-radius: 4px; }
+    .wline.s { width: 55%; }
+    .wline.xs { width: 35%; }
+    .wline.l { width: 100%; }
+    .wsearch { height: 28px; border: 1.5px solid #ddd; border-radius: 20px; padding: 0 10px; display: flex; align-items: center; gap: 5px; font-size: 11px; color: #bbb; background: #fafaf8; }
+    .wrow { display: flex; gap: 5px; flex-wrap: wrap; }
+    .wchip { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 10px; border: 1.5px solid var(--ink); font-size: 9px; color: var(--ink); font-weight: 600; }
+    .wchip.on { background: var(--gold); border-color: var(--gold); }
+
+    /* ÔöÇÔöÇ SERVICE LIST ÔöÇÔöÇ */
+    .svc-item { display: flex; align-items: center; gap: 7px; padding: 7px 0; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .svc-ic { width: 28px; height: 28px; border-radius: 7px; background: #efefed; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .svc-n { font-size: 11px; font-weight: 700; color: var(--ink); }
+    .svc-d { font-size: 8px; color: var(--ink3); }
+    .svc-p { font-size: 11px; font-weight: 700; color: var(--gold); }
+
+    /* ÔöÇÔöÇ CALENDAR ÔöÇÔöÇ */
+    .wcal { background: #f7f7f4; border-radius: 8px; padding: 8px; flex-shrink: 0; }
+    .wcal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .wcal-ttl { font-size: 11px; font-weight: 700; }
+    .wcal-arr { font-size: 12px; color: #bbb; }
+    .wcal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; }
+    .cd { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 7px; border-radius: 4px; color: #888; }
+    .cd.hd { font-weight: 700; color: #bbb; font-size: 6px; }
+    .cd.td { background: var(--ink); color: #fff; }
+    .cd.sl { background: var(--gold); color: var(--ink); font-weight: 700; }
+    .cd.av { color: #333; }
+    .cd.ps { color: #ddd; }
+
+    /* ÔöÇÔöÇ TIME SLOTS ÔöÇÔöÇ */
+    .tgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; }
+    .tsl { height: 24px; border: 1.5px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #666; }
+    .tsl.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .tsl.bz { background: #f0f0ec; color: #ccc; }
+
+    /* ÔöÇÔöÇ STATS ÔöÇÔöÇ */
+    .stats { display: flex; gap: 5px; flex-shrink: 0; }
+    .stat { flex: 1; background: var(--ink); border-radius: 9px; padding: 8px 10px; color: #fff; }
+    .stat.g { background: var(--gold); }
+    .stat-n { font-size: 18px; font-weight: 700; color: var(--gold); line-height: 1; }
+    .stat.g .stat-n { color: var(--ink); }
+    .stat-l { font-size: 8px; color: #888; margin-top: 1px; }
+    .stat.g .stat-l { color: rgba(26,26,26,.55); }
+
+    /* ÔöÇÔöÇ TIMELINE ITEMS ÔöÇÔöÇ */
+    .tl-item { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-bottom: 1px solid #f2f2f0; font-size: 10px; flex-shrink: 0; }
+    .tl-t { width: 28px; text-align: right; font-size: 8px; color: var(--ink3); flex-shrink: 0; }
+    .tl-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ÔöÇÔöÇ BARBER CARDS ÔöÇÔöÇ */
+    .brow { display: flex; gap: 6px; }
+    .bcard { width: 62px; background: #f7f7f4; border-radius: 9px; padding: 7px; border: 1.5px solid #e4e4dc; display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
+    .bcard.on { border-color: var(--gold); background: var(--gold-light); }
+    .bav { width: 40px; height: 40px; border-radius: 50%; background: #e4e4dc; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+    .bcard.on .bav { border: 2px solid var(--gold); }
+    .bnm { font-size: 8px; text-align: center; font-weight: 700; color: #333; line-height: 1.2; }
+    .brt { font-size: 7px; color: var(--gold); }
+
+    /* ÔöÇÔöÇ CONFIRM SUMMARY ÔöÇÔöÇ */
+    .csumm { background: #f7f7f4; border-radius: 9px; border: 1px solid #e4e4dc; padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; }
+    .crow { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+    .ck { color: var(--ink3); }
+    .cv { font-weight: 700; color: var(--ink); }
+
+    /* ÔöÇÔöÇ APPOINTMENT CARD ÔöÇÔöÇ */
+    .acard { background: #f7f7f4; border-radius: 9px; border: 1px solid #e4e4dc; padding: 8px; display: flex; gap: 7px; align-items: flex-start; flex-shrink: 0; }
+    .adate { width: 32px; background: var(--ink); border-radius: 5px; padding: 3px; text-align: center; flex-shrink: 0; }
+    .adn { font-size: 13px; font-weight: 700; color: var(--gold); line-height: 1; }
+    .adm { font-size: 6px; color: #777; }
+
+    /* ÔöÇÔöÇ TABS ÔöÇÔöÇ */
+    .tabbar { display: flex; border-bottom: 1.5px solid var(--line); margin-bottom: 6px; flex-shrink: 0; }
+    .tab { flex: 1; text-align: center; padding: 6px 0; font-size: 11px; color: #bbb; }
+    .tab.on { color: var(--ink); font-weight: 700; border-bottom: 2.5px solid var(--gold); margin-bottom: -1.5px; }
+
+    /* ÔöÇÔöÇ ADMIN HEADER ÔöÇÔöÇ */
+    .ahdr { background: var(--ink); padding: 11px 14px; flex-shrink: 0; }
+    .ahdr-top { display: flex; justify-content: space-between; align-items: center; }
+    .ahdr-g { font-size: 14px; font-weight: 700; color: #fff; }
+    .ahdr-d { font-size: 9px; color: #777; margin-top: 1px; }
+    .ahdr-av { width: 32px; height: 32px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+    /* ÔöÇÔöÇ SCHEDULE BLOCKS ÔöÇÔöÇ */
+    .dstrip { display: flex; gap: 4px; flex-shrink: 0; }
+    .dchip { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 4px; border-radius: 7px; background: #f5f5f2; }
+    .dchip.on { background: var(--gold); }
+    .dchip-d { font-size: 7px; color: #bbb; }
+    .dchip.on .dchip-d { color: #7a5a10; }
+    .dchip-n { font-size: 12px; font-weight: 700; color: #bbb; }
+    .dchip.on .dchip-n { color: var(--ink); }
+    .sch-blk { border-radius: 6px; padding: 5px 8px; font-size: 10px; flex: 1; }
+    .sch-blk.g { background: #4caf50; color: #fff; }
+    .sch-blk.a { background: var(--gold); color: var(--ink); }
+    .sch-blk.d { background: var(--ink); color: #fff; }
+    .sch-blk.e { background: #f5f5f2; border: 1px dashed #ddd; color: #ccc; text-align: center; }
+
+    /* ÔöÇÔöÇ MISC ÔöÇÔöÇ */
+    .promo { background: var(--ink); border-radius: 9px; padding: 11px 13px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .promo-ttl { font-size: 13px; font-weight: 700; color: var(--gold); }
+    .promo-img { width: 40px; height: 40px; background: #333; border-radius: 7px; }
+    .badge { display: inline-block; background: var(--gold); color: var(--ink); border-radius: 8px; font-size: 8px; padding: 1px 5px; font-weight: 700; }
+    .toggle { width: 32px; height: 17px; background: var(--gold); border-radius: 9px; position: relative; flex-shrink: 0; }
+    .toggle::after { content: ''; position: absolute; width: 13px; height: 13px; border-radius: 50%; background: #fff; right: 2px; top: 2px; }
+    .suc-circle { width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 30px; align-self: center; flex-shrink: 0; }
+    .otp-row { display: flex; gap: 5px; justify-content: center; }
+    .otp-box { width: 38px; height: 44px; border: 2px solid var(--ink); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: var(--ink); }
+    .otp-box.act { border-color: var(--gold); color: var(--gold); }
+    .otp-box.em { border: 1.5px dashed #ddd; }
+    .cl-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f2f2f0; flex-shrink: 0; }
+    .cl-av { width: 26px; height: 26px; border-radius: 50%; background: #e4e4dc; flex-shrink: 0; }
+    .set-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f2f2f0; font-size: 11px; color: var(--ink); flex-shrink: 0; }
+
+    /* ÔöÇÔöÇ TWEAKS PANEL ÔöÇÔöÇ */
+    #twk {
+      position: fixed; bottom: 24px; right: 24px; z-index: 500;
+      background: #fff; border-radius: 12px; border: 1.5px solid #e4e4dc;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15); width: 216px;
+      overflow: hidden; display: none; font-family: 'Caveat', cursive;
+    }
+    #twk.open { display: block; }
+    .twk-hdr { background: var(--ink); padding: 9px 13px; display: flex; justify-content: space-between; align-items: center; }
+    .twk-hdr-t { font-size: 13px; font-weight: 700; color: #fff; }
+    .twk-x { color: #888; cursor: pointer; font-size: 16px; background: none; border: none; }
+    .twk-body { padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; }
+    .twk-item { display: flex; flex-direction: column; gap: 5px; }
+    .twk-lbl { font-family: 'Space Mono', monospace; font-size: 8px; color: #aaa; letter-spacing: .1em; }
+    .twk-opts { display: flex; gap: 4px; }
+    .twk-opt { flex: 1; padding: 5px; border: 1.5px solid #e4e4dc; border-radius: 6px; font-size: 11px; text-align: center; cursor: pointer; background: none; font-family: 'Caveat', cursive; color: #888; }
+    .twk-opt.on { border-color: var(--gold); background: var(--gold-light); color: #7a5a10; font-weight: 700; }
+    .twk-colors { display: flex; gap: 7px; align-items: center; }
+    .twk-color { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+    .twk-color.on { border-color: #333; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #333; }
+
+    @media (max-width: 600px) { .canvas { padding: 20px 16px; } .hdr-tabs { display: none; } }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo">Ô£é Navalha de Ouro ÔÇö Wireframes</div>
+  <div class="hdr-sep"></div>
+  <nav class="hdr-tabs">
+    <a href="#m1" class="hdr-tab active" onclick="setActive(this)">M1 -À Auth</a>
+    <a href="#m2" class="hdr-tab" onclick="setActive(this)">M2 -À Agendamento</a>
+    <a href="#m3" class="hdr-tab" onclick="setActive(this)">M3 -À Admin</a>
+  </nav>
+  <div class="hdr-right">
+    <button class="twk-btn" onclick="toggleTwk()">ÔÜÖ Tweaks</button>
+  </div>
+</header>
+
+<div class="canvas">
+
+  <!-- ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ M1 -À AUTH ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ -->
+  <section class="mod" id="m1">
+    <div class="mod-tag">M+¦dulo 1</div>
+    <div class="mod-title">Autentica+º+úo</div>
+    <div class="mod-desc">Login, cadastro e recupera+º+úo de senha. Ponto de entrada do app para clientes e barbeiros.</div>
+    <div class="mod-row">
+
+      <!-- 1A LOGIN -->
+      <div class="pw" data-screen-label="01 Login">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbody pt" style="align-items:stretch;">
+              <div class="wlogo">NO</div>
+              <div class="wtitle">Navalha de Ouro</div>
+              <div class="wsub">Barbearia Premium</div>
+              <div style="height:4px;"></div>
+              <div class="wlabel">E-mail ou Telefone</div>
+              <div class="wfield"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="56333b373f3a16332e333b263a397835393b">[email&#160;protected]</a></div>
+              <div class="wlabel">Senha</div>
+              <div class="wfield">ÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇó</div>
+              <div class="wlink" style="text-align:right; font-size:10px;">Esqueceu a senha?</div>
+              <div class="wbtn g">Entrar</div>
+              <div class="wdiv"></div>
+              <div class="wlink">N+úo tem conta? <span>Cadastre-se</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">1A -À LOGIN</div>
+        <div class="pw-note">Tela de entrada</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 1B REGISTER -->
+      <div class="pw" data-screen-label="01B Cadastro">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Criar Conta</div><div style="width:14px;"></div></div>
+            <div class="wbody" style="gap:7px;">
+              <div class="wlabel">Nome Completo</div>
+              <div class="wfield f">Jo+úo da Silva</div>
+              <div class="wlabel">E-mail</div>
+              <div class="wfield"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="caafa7aba3a68aafb2afa7baa6a5e4a9a5a7">[email&#160;protected]</a></div>
+              <div class="wlabel">Telefone</div>
+              <div class="wfield">(11) 9 0000-0000</div>
+              <div class="wlabel">Senha</div>
+              <div class="wfield">ÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇó</div>
+              <div class="wlabel">Confirmar Senha</div>
+              <div class="wfield">ÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇó</div>
+              <div style="font-size:9px; color:#4caf50; flex-shrink:0;">Ô£ô M+¡n. 8 caracteres -À 1 n+¦mero</div>
+              <div class="wbtn g">Cadastrar</div>
+              <div class="wlink">J+í tem conta? <span>Entrar</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">1B -À CADASTRO</div>
+        <div class="pw-note">Valida+º+úo em tempo real</div>
+      </div>
+
+      <div class="fa" style="transform:rotate(-30deg);">ÔåÆ</div>
+
+      <!-- 1C FORGOT PW -->
+      <div class="pw" data-screen-label="01C Recuperar Senha">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Recuperar Senha</div><div style="width:14px;"></div></div>
+            <div class="wbody pt" style="align-items:stretch; gap:10px;">
+              <div style="width:60px; height:60px; border-radius:50%; border:3px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:26px; align-self:center; flex-shrink:0;">­ƒöæ</div>
+              <div style="text-align:center; font-size:11px; color:var(--ink3); line-height:1.5; flex-shrink:0;">Digite seu e-mail ou telefone para receber um link de recupera+º+úo</div>
+              <div class="wlabel">E-mail ou Telefone</div>
+              <div class="wfield"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e7828a868e8ba7829f828a978b88c984888a">[email&#160;protected]</a></div>
+              <div class="wbtn g">Enviar Link</div>
+              <div class="wdiv"></div>
+              <div class="wlink">Lembrou? <span>Entrar</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">1C -À RECUPERAR SENHA</div>
+        <div class="pw-note">Link por e-mail / SMS</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 1D OTP -->
+      <div class="pw" data-screen-label="01D C+¦digo OTP">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Verificar C+¦digo</div><div style="width:14px;"></div></div>
+            <div class="wbody pt" style="align-items:stretch; gap:12px;">
+              <div style="width:60px; height:60px; border-radius:50%; border:3px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:26px; align-self:center; flex-shrink:0;">­ƒô¦</div>
+              <div style="text-align:center; font-size:11px; color:var(--ink3); line-height:1.5; flex-shrink:0;">C+¦digo enviado para<br><strong style="color:var(--ink);">+55 (11) 9****-1234</strong></div>
+              <div class="otp-row">
+                <div class="otp-box">3</div>
+                <div class="otp-box">7</div>
+                <div class="otp-box act">_</div>
+                <div class="otp-box em"></div>
+                <div class="otp-box em"></div>
+              </div>
+              <div class="wlink" style="font-size:10px;">N+úo recebeu? <span>Reenviar (55s)</span></div>
+              <div class="wbtn g">Verificar</div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">1D -À VERIFICA+ç+âO OTP</div>
+        <div class="pw-note">2-¦ fator de seguran+ºa</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ M2 -À BOOKING ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ -->
+  <section class="mod" id="m2">
+    <div class="mod-tag">M+¦dulo 2</div>
+    <div class="mod-title">Agendamento ÔÇö Fluxo do Cliente</div>
+    <div class="mod-desc">Do dashboard at+® a confirma+º+úo. Fluxo linear com possibilidade de voltar em cada etapa.</div>
+    <div class="mod-row">
+
+      <!-- 2A HOME -->
+      <div class="pw" data-screen-label="02 Home Cliente">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body" style="display:flex; flex-direction:column;">
+            <div class="ahdr">
+              <div class="ahdr-top">
+                <div><div style="font-size:9px; color:#777;">Ol+í,</div><div class="ahdr-g">Jo+úo Silva ­ƒæï</div></div>
+                <div style="position:relative;">
+                  <div class="ahdr-av">­ƒöö</div>
+                  <div style="position:absolute; top:0; right:0; width:8px; height:8px; border-radius:50%; background:var(--gold); border:1px solid var(--ink);"></div>
+                </div>
+              </div>
+            </div>
+            <div class="wbody" style="gap:7px;">
+              <div class="promo">
+                <div><div style="font-size:9px; color:#777;">Promo+º+úo -À Hoje</div><div class="promo-ttl">20% OFF</div><div style="font-size:8px; color:#777;">Corte + Barba</div></div>
+                <div class="promo-img"></div>
+              </div>
+              <div class="wbtn g" style="font-size:14px;">Ô£é´©Å Agendar Agora</div>
+              <div class="wsec">Pr+¦ximo Agendamento</div>
+              <div class="acard">
+                <div class="adate"><div class="adn">15</div><div class="adm">MAI</div></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:3px;"><div style="font-size:11px; font-weight:700;">Corte + Barba -À 14:00</div><div style="font-size:8px; color:var(--ink3);">Jo+úo Mestre -À Confirmado</div></div>
+              </div>
+              <div class="wsec">Servi+ºos</div>
+              <div style="display:flex; gap:5px;">
+                <div style="flex:1; background:#f7f7f4; border-radius:8px; padding:7px; text-align:center; border:1px solid #e4e4dc;"><div style="font-size:16px;">Ô£é´©Å</div><div style="font-size:8px; font-weight:700;">Corte</div><div style="font-size:7px; color:var(--ink3);">R$ 40</div></div>
+                <div style="flex:1; background:#f7f7f4; border-radius:8px; padding:7px; text-align:center; border:1px solid #e4e4dc;"><div style="font-size:16px;">­ƒ¬Æ</div><div style="font-size:8px; font-weight:700;">Barba</div><div style="font-size:7px; color:var(--ink3);">R$ 35</div></div>
+                <div style="flex:1; background:var(--ink); border-radius:8px; padding:7px; text-align:center;"><div style="font-size:16px;">­ƒææ</div><div style="font-size:8px; font-weight:700; color:var(--gold);">Combo</div><div style="font-size:7px; color:#777;">R$ 65</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="ph-nav">
+            <div class="ni"><div class="ni-ic on"></div><div class="ni-lb on">In+¡cio</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Agendar</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Agenda</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Perfil</div></div>
+          </div>
+        </div>
+        <div class="pw-label">2A -À HOME</div>
+        <div class="pw-note">Dashboard do cliente</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 2B SERVICES -->
+      <div class="pw" data-screen-label="02B Servi+ºos">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Escolha o Servi+ºo</div><div style="width:14px;"></div></div>
+            <div class="wbody" style="gap:6px;">
+              <div class="wsearch">­ƒöì Buscar servi+ºo...</div>
+              <div class="wrow">
+                <div class="wchip on">Todos</div>
+                <div class="wchip">Corte</div>
+                <div class="wchip">Barba</div>
+                <div class="wchip">Trat.</div>
+              </div>
+              <div class="svc-item">
+                <div class="svc-ic">Ô£é´©Å</div>
+                <div style="flex:1;"><div class="svc-n">Corte Cl+íssico</div><div class="svc-d">40 min</div></div>
+                <div class="svc-p">R$ 40</div>
+              </div>
+              <div class="svc-item" style="background:#fffbee; margin:0 -14px; padding:7px 14px;">
+                <div class="svc-ic" style="background:var(--gold);">­ƒææ</div>
+                <div style="flex:1;"><div class="svc-n">Corte + Barba</div><div class="svc-d">70 min -À combo</div></div>
+                <div class="svc-p">R$ 65</div>
+              </div>
+              <div class="svc-item">
+                <div class="svc-ic">­ƒ¬Æ</div>
+                <div style="flex:1;"><div class="svc-n">Barba Completa</div><div class="svc-d">30 min</div></div>
+                <div class="svc-p">R$ 35</div>
+              </div>
+              <div class="svc-item">
+                <div class="svc-ic">­ƒÆå</div>
+                <div style="flex:1;"><div class="svc-n">Hidrata+º+úo</div><div class="svc-d">20 min</div></div>
+                <div class="svc-p">R$ 30</div>
+              </div>
+              <div class="svc-item">
+                <div class="svc-ic">Ô£¿</div>
+                <div style="flex:1;"><div class="svc-n">Sobrancelha</div><div class="svc-d">15 min</div></div>
+                <div class="svc-p">R$ 20</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">2B -À SERVI+çOS</div>
+        <div class="pw-note">Filtros + busca</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 2C BARBER -->
+      <div class="pw" data-screen-label="02C Barbeiro">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Escolha o Barbeiro</div><div style="width:14px;"></div></div>
+            <div class="wbody" style="gap:8px;">
+              <div style="background:#f7f7f4; border-radius:7px; padding:6px 9px; font-size:10px; border:1px solid #e4e4dc; color:var(--ink3); flex-shrink:0;">Ô£é´©Å <strong style="color:var(--ink);">Corte + Barba</strong> -À R$ 65 -À 70 min</div>
+              <div class="wsec">Dispon+¡veis Hoje</div>
+              <div class="brow">
+                <div class="bcard on"><div class="bav">­ƒæ¿ÔÇì­ƒª¦</div><div class="bnm">Jo+úo Mestre</div><div class="brt">ÔÿàÔÿàÔÿàÔÿàÔÿà</div></div>
+                <div class="bcard"><div class="bav">­ƒæ¿ÔÇì­ƒª¦</div><div class="bnm">Pedro Silva</div><div class="brt">ÔÿàÔÿàÔÿàÔÿàÔÿå</div></div>
+                <div class="bcard"><div class="bav">­ƒºö</div><div class="bnm">Carlos B.</div><div class="brt">ÔÿàÔÿàÔÿàÔÿàÔÿà</div></div>
+              </div>
+              <div style="font-size:10px; color:var(--gold); font-weight:700; flex-shrink:0;">Sem prefer+¬ncia (1-¦ dispon+¡vel)</div>
+              <div class="wdiv"></div>
+              <div class="wsec">Jo+úo Mestre</div>
+              <div style="display:flex; gap:8px; flex-shrink:0;">
+                <div style="width:50px; height:50px; border-radius:9px; background:#e4e4dc; flex-shrink:0;"></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px; justify-content:center;">
+                  <div class="wline s"></div>
+                  <div class="wline l"></div>
+                  <div style="font-size:8px; color:var(--ink3);">12 anos exp. -À 4.9 Ôÿà</div>
+                </div>
+              </div>
+              <div class="wbtn g">Continuar</div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">2C -À BARBEIRO</div>
+        <div class="pw-note">Perfil + avalia+º+Áes</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 2D DATE & TIME -->
+      <div class="pw" data-screen-label="02D Data e Hor+írio">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Data e Hor+írio</div><div style="width:14px;"></div></div>
+            <div class="wbody" style="gap:7px;">
+              <div class="wcal">
+                <div class="wcal-hdr"><div class="wcal-arr">ÔÇ¦</div><div class="wcal-ttl">Maio 2026</div><div class="wcal-arr">ÔÇ¦</div></div>
+                <div class="wcal-grid">
+                  <div class="cd hd">D</div><div class="cd hd">S</div><div class="cd hd">T</div><div class="cd hd">Q</div><div class="cd hd">Q</div><div class="cd hd">S</div><div class="cd hd">S</div>
+                  <div class="cd ps">1</div><div class="cd ps">2</div><div class="cd ps">3</div><div class="cd ps">4</div><div class="cd ps">5</div><div class="cd ps">6</div><div class="cd ps">7</div>
+                  <div class="cd ps">8</div><div class="cd ps">9</div><div class="cd ps">10</div><div class="cd ps">11</div><div class="cd td">12</div><div class="cd av">13</div><div class="cd av">14</div>
+                  <div class="cd sl">15</div><div class="cd av">16</div><div class="cd av">17</div><div class="cd av">18</div><div class="cd av">19</div><div class="cd ps">20</div><div class="cd ps">21</div>
+                  <div class="cd av">22</div><div class="cd av">23</div><div class="cd av">24</div><div class="cd av">25</div><div class="cd av">26</div><div class="cd ps">27</div><div class="cd ps">28</div>
+                  <div class="cd av">29</div><div class="cd av">30</div><div class="cd av">31</div>
+                </div>
+              </div>
+              <div class="wsec" style="font-size:10px;">Qui, 15 mai ÔÇö Hor+írios</div>
+              <div class="tgrid">
+                <div class="tsl bz">09:00</div><div class="tsl bz">09:30</div><div class="tsl">10:00</div>
+                <div class="tsl">10:30</div><div class="tsl bz">11:00</div><div class="tsl on">14:00</div>
+                <div class="tsl">14:30</div><div class="tsl">15:00</div><div class="tsl bz">15:30</div>
+                <div class="tsl">16:00</div><div class="tsl">16:30</div><div class="tsl">17:00</div>
+              </div>
+              <div style="display:flex; gap:8px; font-size:8px; color:var(--ink3); flex-shrink:0;">
+                <span>Ôûí Livre</span><span style="color:var(--ink);">Ôûá Selecionado</span><span style="opacity:.4;">Ôûá Ocupado</span>
+              </div>
+              <div class="wbtn g">Confirmar Hor+írio</div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">2D -À DATA & HOR+üRIO</div>
+        <div class="pw-note">Calend+írio + slots</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 2E CONFIRM -->
+      <div class="pw" data-screen-label="02E Confirma+º+úo">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Confirmar</div><div style="width:14px;"></div></div>
+            <div class="wbody" style="gap:9px;">
+              <div class="csumm">
+                <div class="crow"><div class="ck">Servi+ºo</div><div class="cv">Corte + Barba</div></div>
+                <div class="wdiv"></div>
+                <div class="crow"><div class="ck">Barbeiro</div><div class="cv">Jo+úo Mestre</div></div>
+                <div class="wdiv"></div>
+                <div class="crow"><div class="ck">Data</div><div class="cv">Qui, 15 Mai</div></div>
+                <div class="wdiv"></div>
+                <div class="crow"><div class="ck">Hor+írio</div><div class="cv">14:00 ÔÇô 15:10</div></div>
+                <div class="wdiv"></div>
+                <div class="crow"><div class="ck">Dura+º+úo</div><div class="cv">70 min</div></div>
+                <div class="wdiv"></div>
+                <div class="crow"><div class="ck" style="font-size:13px; font-weight:700; color:var(--ink);">Total</div><div class="cv" style="font-size:17px; color:var(--gold);">R$ 65,00</div></div>
+              </div>
+              <div style="font-size:10px; color:var(--ink3); text-align:center; line-height:1.5; flex-shrink:0;">Pagamento no local -À Cancelar at+® 2h antes sem custo</div>
+              <div class="wbtn g" style="font-size:14px;">Ô£à Confirmar Agendamento</div>
+              <div class="wbtn o sm">Alterar</div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">2E -À CONFIRMA+ç+âO</div>
+        <div class="pw-note">Resumo + CTA final</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 2F SUCCESS -->
+      <div class="pw" data-screen-label="02F Sucesso">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbody pt" style="align-items:stretch; gap:10px;">
+              <div class="suc-circle">Ô£ô</div>
+              <div style="font-size:19px; font-weight:700; color:var(--ink); text-align:center; flex-shrink:0;">Agendado!</div>
+              <div style="font-size:11px; color:var(--ink3); text-align:center; line-height:1.5; flex-shrink:0;">Confirma+º+úo por SMS e e-mail.</div>
+              <div class="csumm">
+                <div class="crow"><div class="ck">Servi+ºo</div><div class="cv">Corte + Barba</div></div>
+                <div class="crow"><div class="ck">Data</div><div class="cv">15 Mai -À 14:00</div></div>
+                <div class="crow"><div class="ck">Barbeiro</div><div class="cv">Jo+úo Mestre</div></div>
+              </div>
+              <div class="wbtn g">Ver Meus Agendamentos</div>
+              <div class="wlink">Adicionar ao Calend+írio</div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">2F -À SUCESSO</div>
+        <div class="pw-note">Feedback p+¦s-agendamento</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 2G MY APPOINTMENTS -->
+      <div class="pw" data-screen-label="02G Meus Agendamentos">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div style="flex:1;"></div><div class="wbar-title">Meus Agendamentos</div><div style="flex:1;"></div></div>
+            <div class="wbody" style="gap:7px; padding-top:8px;">
+              <div class="tabbar">
+                <div class="tab on">Pr+¦ximos</div>
+                <div class="tab">Hist+¦rico</div>
+              </div>
+              <div class="acard" style="border-color:var(--gold);">
+                <div class="adate"><div class="adn">15</div><div class="adm">MAI</div></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+                  <div style="font-size:11px; font-weight:700;">Corte + Barba</div>
+                  <div style="font-size:8px; color:var(--ink3);">Jo+úo Mestre -À 14:00</div>
+                  <div style="display:flex; gap:3px; margin-top:2px;"><div class="wchip on" style="font-size:7px; padding:1px 5px;">Confirmado</div></div>
+                </div>
+                <div style="font-size:13px; color:var(--ink3);">Ôï«</div>
+              </div>
+              <div class="acard" style="opacity:.7;">
+                <div class="adate" style="background:#888;"><div class="adn" style="color:#fff;">22</div><div class="adm">MAI</div></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+                  <div style="font-size:11px; font-weight:700;">Corte Cl+íssico</div>
+                  <div style="font-size:8px; color:var(--ink3);">Carlos B. -À 10:00</div>
+                  <div style="display:flex; gap:3px; margin-top:2px;"><div class="wchip" style="font-size:7px; padding:1px 5px; color:#aaa; border-color:#ddd;">Pendente</div></div>
+                </div>
+                <div style="font-size:13px; color:var(--ink3);">Ôï«</div>
+              </div>
+              <div class="wbtn o sm" style="margin-top:2px;">+ Novo Agendamento</div>
+            </div>
+          </div>
+          <div class="ph-nav">
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">In+¡cio</div></div>
+            <div class="ni"><div class="ni-ic on"></div><div class="ni-lb on">Agenda</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Hist+¦rico</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Perfil</div></div>
+          </div>
+        </div>
+        <div class="pw-label">2G -À MEUS AGENDAMENTOS</div>
+        <div class="pw-note">Pr+¦ximos + a+º+Áes r+ípidas</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ M3 -À ADMIN ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ -->
+  <section class="mod" id="m3">
+    <div class="mod-tag">M+¦dulo 3</div>
+    <div class="mod-title">Painel do Barbeiro</div>
+    <div class="mod-desc">Gest+úo completa: agenda di+íria, detalhe de atendimentos, clientes e configura+º+Áes de perfil.</div>
+    <div class="mod-row">
+
+      <!-- 3A DASHBOARD -->
+      <div class="pw" data-screen-label="03 Dashboard Barbeiro">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body" style="display:flex; flex-direction:column;">
+            <div class="ahdr">
+              <div class="ahdr-top">
+                <div><div class="ahdr-g">Ol+í, Jo+úo Ô£é´©Å</div><div class="ahdr-d">Ter, 12 de Maio -À 09:41</div></div>
+                <div class="ahdr-av">­ƒæñ</div>
+              </div>
+            </div>
+            <div class="wbody" style="gap:7px;">
+              <div class="stats">
+                <div class="stat"><div class="stat-n">8</div><div class="stat-l">Hoje</div></div>
+                <div class="stat"><div class="stat-n" style="font-size:14px;">R$320</div><div class="stat-l">Faturamento</div></div>
+                <div class="stat g"><div class="stat-n">3</div><div class="stat-l">Pendentes</div></div>
+              </div>
+              <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;"><div class="wsec">Pr+¦xima consulta</div><div class="badge">em 20min</div></div>
+              <div class="acard" style="border-color:var(--gold); background:var(--gold-light);">
+                <div class="adate" style="background:var(--gold);"><div class="adn" style="color:var(--ink);">12</div><div class="adm" style="color:rgba(26,26,26,.55);">MAI</div></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:2px;"><div style="font-size:11px; font-weight:700;">Paulo Sauro</div><div style="font-size:8px; color:var(--ink3);">Corte Cl+íssico -À 10:00</div><div style="font-size:8px; color:var(--gold);">R$ 40 -À 40 min</div></div>
+              </div>
+              <div class="wsec">Agenda de Hoje</div>
+              <div class="tl-item"><div class="tl-t">09:00</div><div class="tl-dot" style="background:#4caf50;"></div><div style="flex:1;">Carlos R. -À Barba</div><div style="font-size:8px; color:#4caf50;">Conclu+¡do</div></div>
+              <div class="tl-item"><div class="tl-t">10:00</div><div class="tl-dot" style="background:var(--gold);"></div><div style="flex:1; font-weight:700;">Paulo S. -À Corte</div><div style="font-size:8px; color:var(--gold);">Em breve</div></div>
+              <div class="tl-item" style="border:none;"><div class="tl-t">11:30</div><div class="tl-dot" style="background:#ddd;"></div><div style="flex:1; color:var(--ink3);">Marcus L. -À Combo</div><div style="font-size:8px; color:#ccc;">Agendado</div></div>
+            </div>
+          </div>
+          <div class="ph-nav">
+            <div class="ni"><div class="ni-ic on"></div><div class="ni-lb on">Painel</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Agenda</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Clientes</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Config</div></div>
+          </div>
+        </div>
+        <div class="pw-label">3A -À DASHBOARD BARBEIRO</div>
+        <div class="pw-note">KPIs + pr+¦xima consulta</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 3B SCHEDULE -->
+      <div class="pw" data-screen-label="03B Agenda do Dia">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div style="flex:1;"></div><div class="wbar-title">Agenda</div><div class="wbar-r">+ Bloquear</div></div>
+            <div class="wbody" style="gap:7px; padding-top:8px;">
+              <div class="dstrip">
+                <div class="dchip"><div class="dchip-d">SEG</div><div class="dchip-n">11</div></div>
+                <div class="dchip on"><div class="dchip-d">TER</div><div class="dchip-n">12</div></div>
+                <div class="dchip"><div class="dchip-d">QUA</div><div class="dchip-n">13</div></div>
+                <div class="dchip"><div class="dchip-d">QUI</div><div class="dchip-n">14</div></div>
+                <div class="dchip"><div class="dchip-d">SEX</div><div class="dchip-n">15</div></div>
+              </div>
+              <div style="display:flex; gap:6px; align-items:flex-start; flex-shrink:0;">
+                <div style="width:28px; text-align:right; font-size:7px; color:var(--ink3); padding-top:5px; flex-shrink:0;">09:00</div>
+                <div class="sch-blk g" style="flex:1;"><div style="font-weight:700; font-size:10px;">Carlos R.</div><div style="font-size:8px; opacity:.8;">Barba -À 30 min</div></div>
+              </div>
+              <div style="display:flex; gap:6px; align-items:flex-start; flex-shrink:0;">
+                <div style="width:28px; text-align:right; font-size:7px; color:var(--ink3); padding-top:5px; flex-shrink:0;">10:00</div>
+                <div class="sch-blk a" style="flex:1;"><div style="font-weight:700; font-size:10px;">Paulo S.</div><div style="font-size:8px; opacity:.8;">Corte -À 40 min</div></div>
+              </div>
+              <div style="display:flex; gap:6px; align-items:flex-start; flex-shrink:0;">
+                <div style="width:28px; text-align:right; font-size:7px; color:var(--ink3); padding-top:5px; flex-shrink:0;">11:00</div>
+                <div class="sch-blk e" style="flex:1; font-size:10px;">livre</div>
+              </div>
+              <div style="display:flex; gap:6px; align-items:flex-start; flex-shrink:0;">
+                <div style="width:28px; text-align:right; font-size:7px; color:var(--ink3); padding-top:5px; flex-shrink:0;">11:30</div>
+                <div class="sch-blk d" style="flex:1;"><div style="font-weight:700; font-size:10px;">Marcus L.</div><div style="font-size:8px; opacity:.7;">Combo -À 70 min</div></div>
+              </div>
+              <div style="display:flex; gap:6px; align-items:flex-start; flex-shrink:0;">
+                <div style="width:28px; text-align:right; font-size:7px; color:var(--ink3); padding-top:5px; flex-shrink:0;">13:00</div>
+                <div style="flex:1; background:#f5f5f2; border-radius:6px; padding:5px 8px; font-size:10px; color:#bbb; text-align:center; border:1px solid #e8e8e0;">­ƒì¢´©Å Almo+ºo</div>
+              </div>
+            </div>
+          </div>
+          <div class="ph-nav">
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Painel</div></div>
+            <div class="ni"><div class="ni-ic on"></div><div class="ni-lb on">Agenda</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Clientes</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Config</div></div>
+          </div>
+        </div>
+        <div class="pw-label">3B -À AGENDA DO DIA</div>
+        <div class="pw-note">Timeline + bloqueios</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 3C APPOINTMENT DETAIL -->
+      <div class="pw" data-screen-label="03C Detalhe Agendamento">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div class="wbar-back"></div><div class="wbar-title">Detalhe</div><div style="font-size:14px; color:var(--ink3);">Ôï«</div></div>
+            <div class="wbody" style="gap:8px;">
+              <div style="display:flex; align-items:center; gap:9px; flex-shrink:0;">
+                <div style="width:46px; height:46px; border-radius:50%; background:#e4e4dc; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">­ƒæñ</div>
+                <div style="flex:1;"><div style="font-size:13px; font-weight:700;">Paulo Sauro</div><div style="font-size:9px; color:var(--ink3);">(11) 99999-1234 -À 3-¬ visita</div></div>
+                <div style="display:flex; gap:3px;">
+                  <div style="width:28px; height:24px; background:#f5f5f2; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px;">­ƒô×</div>
+                  <div style="width:28px; height:24px; background:#f5f5f2; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px;">­ƒÆ¼</div>
+                </div>
+              </div>
+              <div class="wdiv"></div>
+              <div class="csumm">
+                <div class="crow"><div class="ck">Servi+ºo</div><div class="cv">Corte Cl+íssico</div></div>
+                <div class="crow"><div class="ck">Hor+írio</div><div class="cv">10:00 ÔÇô 10:40</div></div>
+                <div class="crow"><div class="ck">Valor</div><div class="cv" style="color:var(--gold);">R$ 40,00</div></div>
+                <div class="crow"><div class="ck">Status</div><div style="background:var(--gold); color:var(--ink); font-size:8px; padding:2px 6px; border-radius:8px; font-weight:700;">Confirmado</div></div>
+              </div>
+              <div class="wsec" style="font-size:10px;">Observa+º+Áes do cliente</div>
+              <div style="background:#f7f7f4; border-radius:7px; padding:8px; font-size:10px; color:var(--ink3); line-height:1.5; border:1px solid #e4e4dc; flex-shrink:0;">Prefere tesoura. Corte baixo nas laterais, manter volume no topo.</div>
+              <div style="display:flex; gap:6px; flex-shrink:0;">
+                <div class="wbtn o sm" style="flex:1;">Cancelar</div>
+                <div class="wbtn g sm" style="flex:2;">Ô£ô Concluir</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pw-label">3C -À DETALHE DO AGEND.</div>
+        <div class="pw-note">Concluir / cancelar</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 3D CLIENTS -->
+      <div class="pw" data-screen-label="03D Clientes">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div style="flex:1;"></div><div class="wbar-title">Clientes</div><div style="flex:1;"></div></div>
+            <div class="wbody" style="gap:6px; padding-top:8px;">
+              <div class="wsearch">­ƒöì Buscar cliente...</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-shrink:0;"><div style="font-size:10px; color:var(--ink3);">48 clientes ativos</div><div style="font-size:9px; color:var(--gold);">Filtrar Ôû+</div></div>
+              <div class="cl-row"><div class="cl-av"></div><div style="flex:1;"><div style="font-size:10px; font-weight:700;">Paulo Sauro</div><div style="font-size:7px; color:var(--ink3);">+Ültima: 12 Mai</div></div><div style="font-size:8px; color:var(--gold);">3+ù/m+¬s</div></div>
+              <div class="cl-row"><div class="cl-av"></div><div style="flex:1;"><div style="font-size:10px; font-weight:700;">Carlos Rodrigues</div><div style="font-size:7px; color:var(--ink3);">+Ültima: 10 Mai</div></div><div style="font-size:8px; color:var(--ink3);">1+ù/m+¬s</div></div>
+              <div class="cl-row"><div class="cl-av"></div><div style="flex:1;"><div style="font-size:10px; font-weight:700;">Thiago Mendes</div><div style="font-size:7px; color:var(--ink3);">+Ültima: 8 Mai</div></div><div style="font-size:8px; color:var(--gold);">4+ù/m+¬s Ô¡É</div></div>
+              <div class="cl-row"><div class="cl-av"></div><div style="flex:1;"><div style="font-size:10px; font-weight:700;">Marcus Lima</div><div style="font-size:7px; color:var(--ink3);">+Ültima: 2 Mai</div></div><div style="font-size:8px; color:var(--ink3);">2+ù/m+¬s</div></div>
+              <div class="cl-row"><div class="cl-av"></div><div style="flex:1;"><div style="font-size:10px; font-weight:700; color:#bbb;">Lucas Ferreira</div><div style="font-size:7px; color:var(--ink3);">+Ültima: 1 Mar</div></div><div style="font-size:8px; color:#e88;">Inativo</div></div>
+            </div>
+          </div>
+          <div class="ph-nav">
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Painel</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Agenda</div></div>
+            <div class="ni"><div class="ni-ic on"></div><div class="ni-lb on">Clientes</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Config</div></div>
+          </div>
+        </div>
+        <div class="pw-label">3D -À GEST+âO DE CLIENTES</div>
+        <div class="pw-note">Frequ+¬ncia + hist+¦rico</div>
+      </div>
+
+      <div class="fa">ÔåÆ</div>
+
+      <!-- 3E SETTINGS -->
+      <div class="pw" data-screen-label="03E Configura+º+Áes">
+        <div class="ph">
+          <div class="ph-sb"><span class="ph-time">9:41</span><span class="ph-icons">Ôû¦Ôû¦Ôûè</span></div>
+          <div class="ph-notch"></div>
+          <div class="ph-body">
+            <div class="wbar"><div style="flex:1;"></div><div class="wbar-title">Configura+º+Áes</div><div style="flex:1;"></div></div>
+            <div class="wbody" style="gap:0; padding:0; overflow:hidden;">
+              <div style="padding:11px 13px; border-bottom:6px solid #f2f2f0; display:flex; align-items:center; gap:9px; flex-shrink:0;">
+                <div style="width:44px; height:44px; border-radius:50%; background:#e4e4dc; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;">­ƒæñ</div>
+                <div><div style="font-size:12px; font-weight:700;">Jo+úo Mestre</div><div style="font-size:9px; color:var(--ink3);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a5cfcac4cae5cbc4d3c4c9cdc4c1c0cad0d7ca8bc6cac8">[email&#160;protected]</a></div></div>
+              </div>
+              <div style="padding:0 13px;">
+                <div class="set-row">Hor+írios de Trabalho <span style="color:var(--ink3);">ÔÇ¦</span></div>
+                <div class="set-row">Servi+ºos e Pre+ºos <span style="color:var(--ink3);">ÔÇ¦</span></div>
+                <div class="set-row">Notifica+º+Áes <div class="toggle"></div></div>
+                <div class="set-row">Bloqueio de Datas <span style="color:var(--ink3);">ÔÇ¦</span></div>
+                <div class="set-row">Relat+¦rios <span style="color:var(--ink3);">ÔÇ¦</span></div>
+                <div class="set-row">Pagamentos <span style="color:var(--ink3);">ÔÇ¦</span></div>
+                <div class="set-row" style="color:#e44; border-bottom:none;">Sair da Conta</div>
+              </div>
+            </div>
+          </div>
+          <div class="ph-nav">
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Painel</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Agenda</div></div>
+            <div class="ni"><div class="ni-ic"></div><div class="ni-lb">Clientes</div></div>
+            <div class="ni"><div class="ni-ic on"></div><div class="ni-lb on">Config</div></div>
+          </div>
+        </div>
+        <div class="pw-label">3E -À CONFIGURA+ç+òES</div>
+        <div class="pw-note">Perfil + hor+írios + servi+ºos</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div style="border-top:1px solid var(--border); padding:20px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+    <div style="font-family:'Space Mono',monospace; font-size:8px; color:#444;">Barbearia Navalha de Ouro -À Wireframes v0.1 -À 16 telas -À 3 m+¦dulos</div>
+    <div style="font-size:12px; color:#555; font-family:'Space Mono',monospace; font-size:9px;">M1: Auth (4) ÔåÆ M2: Agendamento (7) ÔåÆ M3: Admin (5)</div>
+  </div>
+
+</div>
+
+<!-- TWEAKS PANEL -->
+<div id="twk">
+  <div class="twk-hdr">
+    <div class="twk-hdr-t">Tweaks</div>
+    <button class="twk-x" onclick="toggleTwk()">Ô£ò</button>
+  </div>
+  <div class="twk-body">
+    <div class="twk-item">
+      <div class="twk-lbl">TAMANHO DO CELULAR</div>
+      <div class="twk-opts">
+        <button class="twk-opt" onclick="setSize('sm',this)">Pequeno</button>
+        <button class="twk-opt on" onclick="setSize('md',this)">Normal</button>
+        <button class="twk-opt" onclick="setSize('lg',this)">Grande</button>
+      </div>
+    </div>
+    <div class="twk-item">
+      <div class="twk-lbl">COR DO DESTAQUE</div>
+      <div class="twk-colors">
+        <div class="twk-color on" style="background:#c9a84c;" onclick="setColor('#c9a84c','#7a5a10',this)" title="Ouro"></div>
+        <div class="twk-color" style="background:#3b82f6;" onclick="setColor('#3b82f6','#1d4ed8',this)" title="Azul"></div>
+        <div class="twk-color" style="background:#10b981;" onclick="setColor('#10b981','#065f46',this)" title="Verde"></div>
+        <div class="twk-color" style="background:#8b5cf6;" onclick="setColor('#8b5cf6','#5b21b6',this)" title="Roxo"></div>
+      </div>
+    </div>
+    <div class="twk-item">
+      <div class="twk-lbl">ANOTA+ç+òES</div>
+      <div class="twk-opts">
+        <button class="twk-opt on" onclick="showEl('.pw-note',true,this)">Mostrar</button>
+        <button class="twk-opt" onclick="showEl('.pw-note',false,this)">Ocultar</button>
+      </div>
+    </div>
+    <div class="twk-item">
+      <div class="twk-lbl">SETAS DE FLUXO</div>
+      <div class="twk-opts">
+        <button class="twk-opt on" onclick="showEl('.fa',true,this)">Mostrar</button>
+        <button class="twk-opt" onclick="showEl('.fa',false,this)">Ocultar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{"size":"md","color":"#c9a84c","notes":true,"arrows":true}/*EDITMODE-END*/;
+
+  function toggleTwk() { document.getElementById('twk').classList.toggle('open'); }
+
+  function setActive(el) {
+    document.querySelectorAll('.hdr-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Auto-highlight active tab on scroll
+  const sections = document.querySelectorAll('.mod');
+  const tabs = document.querySelectorAll('.hdr-tab');
+  window.addEventListener('scroll', () => {
+    let curr = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) curr = s.id; });
+    tabs.forEach(t => t.classList.toggle('active', t.getAttribute('href') === '#' + curr));
+  }, { passive: true });
+
+  function setSize(sz, btn) {
+    const sizes = { sm: ['220px','460px'], md: ['252px','524px'], lg: ['292px','608px'] };
+    document.documentElement.style.setProperty('--phone-w', sizes[sz][0]);
+    document.documentElement.style.setProperty('--phone-h', sizes[sz][1]);
+    btn.closest('.twk-opts').querySelectorAll('.twk-opt').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function setColor(c, cd, dot) {
+    document.documentElement.style.setProperty('--gold', c);
+    dot.closest('.twk-colors').querySelectorAll('.twk-color').forEach(d => d.classList.remove('on'));
+    dot.classList.add('on');
+  }
+
+  function showEl(sel, show, btn) {
+    document.querySelectorAll(sel).forEach(el => el.style.display = show ? '' : 'none');
+    btn.closest('.twk-opts').querySelectorAll('.twk-opt').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+</script>
+
+</body>
+</html>

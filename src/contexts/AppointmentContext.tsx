@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { lsGet, lsSet } from '../services/storage';
 import { acquireLock, releaseLock } from '../services/concurrency';
 import { useAuth } from './AuthContext';
 
@@ -21,33 +20,38 @@ type AppointmentCtx = {
 
 const Ctx = createContext<AppointmentCtx | undefined>(undefined);
 
-const APPT_KEY = 'appointments';
+const APPT_KEY = 'barbershop_appointments';
+
+function readAppts(): Appointment[] {
+  try { return JSON.parse(localStorage.getItem(APPT_KEY) || '[]'); } catch { return []; }
+}
+function writeAppts(a: Appointment[]) {
+  localStorage.setItem(APPT_KEY, JSON.stringify(a));
+}
 
 export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>(() => lsGet<Appointment[]>(APPT_KEY, []));
+  const [appointments, setAppointments] = useState<Appointment[]>(() => readAppts());
   const { user } = useAuth();
 
   useEffect(() => {
     const onStorage = (ev: StorageEvent) => {
-      if (ev.key && ev.key.startsWith('barbershop_')) setAppointments(lsGet<Appointment[]>(APPT_KEY, []));
+      if (ev.key && ev.key.startsWith('barbershop_')) setAppointments(readAppts());
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const reload = () => setAppointments(lsGet<Appointment[]>(APPT_KEY, []));
+  const reload = () => setAppointments(readAppts());
 
   const create = async (svcId: string, iso: string) => {
     if (!user) return { ok: false, reason: 'unauthenticated' };
-    // lock by slot (date_time)
     const slotKey = `slot_${iso}`;
     const owner = user.id + '_' + Date.now();
     const locked = acquireLock(slotKey, owner, 5000);
     if (!locked) return { ok: false, reason: 'locked' };
 
     try {
-      const curr = lsGet<Appointment[]>(APPT_KEY, []);
-      // check conflict
+      const curr = readAppts();
       const conflict = curr.some(a => a.data_hora === iso && a.status !== 'canceled');
       if (conflict) return { ok: false, reason: 'conflict' };
 
@@ -60,7 +64,7 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
         data_criacao: new Date().toISOString(),
       };
       const next = [...curr, ap];
-      lsSet(APPT_KEY, next);
+      writeAppts(next);
       setAppointments(next);
       return { ok: true, appointment: ap };
     } finally {
@@ -69,9 +73,9 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   const cancel = (id: string) => {
-    const curr = lsGet<Appointment[]>(APPT_KEY, []);
+    const curr = readAppts();
     const next = curr.map(a => a.id === id ? { ...a, status: 'canceled' as const } : a);
-    lsSet(APPT_KEY, next);
+    writeAppts(next);
     setAppointments(next as Appointment[]);
   };
 

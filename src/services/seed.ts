@@ -1,8 +1,11 @@
 // Seed data for testing - initialize default users if none exist
-import { lsGet, lsSet } from './storage';
+
+const USERS_KEY = 'barbershop_users';
 
 export function initializeTestData() {
-  const users = lsGet<any[]>('users', []);
+  let users: any[] = [];
+  try { users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); } catch { /* empty */ }
+
   if (users.length === 0) {
     const testUsers = [
       {
@@ -33,7 +36,7 @@ export function initializeTestData() {
         data_criacao: new Date().toISOString(),
       },
     ];
-    lsSet('users', testUsers);
+    localStorage.setItem(USERS_KEY, JSON.stringify(testUsers));
   }
 }
 

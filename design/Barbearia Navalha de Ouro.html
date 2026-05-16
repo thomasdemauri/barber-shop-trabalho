@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navalha de Ouro ÔÇö Prot+¦tipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #080604; overflow: hidden; }
+  #root { height: 100%; display: flex; align-items: center; justify-content: center; }
+  button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  input { outline: none; font-family: 'DM Sans', sans-serif; }
+  input::placeholder { color: #6a5c44; opacity: 1; }
+
+  @keyframes slideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes slideLeft  { from { transform: translateX(-20%); opacity: 0.5; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes fadeUp     { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn    { 0%{transform:scale(0) rotate(-12deg);opacity:0} 65%{transform:scale(1.1) rotate(2deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+  @keyframes spin       { to { transform: rotate(360deg); } }
+  @keyframes glowRing   { 0%,100%{box-shadow:0 0 0 0 rgba(196,145,42,0)} 50%{box-shadow:0 0 0 22px rgba(196,145,42,0.13)} }
+  @keyframes float      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+  @keyframes shimmer    { 0%{background-position:-200% center} 100%{background-position:200% center} }
+
+  .anim-right  { animation: slideRight 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .anim-left   { animation: slideLeft  0.26s cubic-bezier(0.4,0,0.2,1); }
+  .anim-none   {}
+  .fade-up     { animation: fadeUp   0.38s cubic-bezier(0.4,0,0.2,1) both; }
+  .scale-in    { animation: scaleIn  0.55s cubic-bezier(0.4,0,0.2,1) both; }
+  .glow-ring   { animation: glowRing 2.6s ease-in-out infinite; }
+  .float       { animation: float    3s   ease-in-out infinite; }
+
+  .tap { transition: opacity 0.1s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+  .tap:active { opacity: 0.68; transform: scale(0.96); }
+
+  .scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-y::-webkit-scrollbar { width: 0; }
+  .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-x::-webkit-scrollbar { height: 0; }
+
+  .inp-wrap:focus-within .inp-line { background: rgba(196,145,42,0.45) !important; }
+
+  /* Subtle grain texture on phone */
+  .phone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    border-radius: 50px;
+    opacity: 0.6;
+  }
+
+  /* Label outside phone */
+  .screen-hint {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: rgba(240,227,196,0.28);
+    letter-spacing: 0.08em;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- ÔöÇÔöÇ SCRIPT 1: Atoms + Data ÔöÇÔöÇ -->
+<script type="text/babel" src="atoms.jsx"></script>
+
+<!-- ÔöÇÔöÇ SCRIPT 2: Screens ÔöÇÔöÇ -->
+<script type="text/babel" src="screens.jsx"></script>
+
+<!-- ÔöÇÔöÇ SCRIPT 3: App ÔöÇÔöÇ -->
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+const {
+  C,
+  StatusBar, BackBar, Btn, Inp, HomeIndicator, BottomNav,
+  LoginScreen, RegisterScreen, ForgotScreen, HomeScreen,
+  ServicesScreen, BarberScreen, DateTimeScreen, ConfirmScreen,
+  SuccessScreen, AppointmentsScreen, ProfileScreen, AdminScreen,
+} = window;
+
+const SCREEN_LABELS = {
+  login:'Login', register:'Cadastro', forgot:'Recuperar Senha',
+  home:'In+¡cio', services:'Servi+ºos', barber:'Barbeiro',
+  datetime:'Data & Hor+írio', confirm:'Confirma+º+úo', success:'Agendado!',
+  appointments:'Meus Agendamentos', profile:'Perfil', admin:'Painel do Barbeiro',
+};
+
+function App() {
+  const [stack, setStack]     = useState(['login']);
+  const [dir,   setDir]       = useState('none');
+  const [booking, setBooking] = useState({ service:null, barber:null, date:null, time:null });
+  const [userMode, setUserMode] = useState('client');
+  const phoneRef = useRef(null);
+
+  /* ÔöÇÔöÇ navigation ÔöÇÔöÇ */
+  const push       = (s) => { setDir('right'); setStack(p => [...p, s]); };
+  const pop        = ()  => { setDir('left');  setStack(p => p.length > 1 ? p.slice(0,-1) : p); };
+  const replaceAll = (s) => { setDir('right'); setStack([s]); };
+  const current    = stack[stack.length - 1];
+
+  /* ÔöÇÔöÇ phone scaling ÔöÇÔöÇ */
+  useEffect(() => {
+    const scale = () => {
+      const el = phoneRef.current;
+      if (!el) return;
+      const s = Math.min(
+        (window.innerHeight - 28) / 844,
+        (window.innerWidth  - 28) / 390,
+        1
+      );
+      el.style.transform = `scale(${s})`;
+    };
+    scale();
+    window.addEventListener('resize', scale);
+    return () => window.removeEventListener('resize', scale);
+  }, []);
+
+  /* ÔöÇÔöÇ reset scroll on navigation ÔöÇÔöÇ */
+  useEffect(() => {
+    const sc = phoneRef.current?.querySelector('.scroll-y');
+    if (sc) sc.scrollTop = 0;
+  }, [current]);
+
+  /* ÔöÇÔöÇ bottom nav handler ÔöÇÔöÇ */
+  const handleNav = (id) => {
+    if (id === current) return;
+    if (['home','services','appointments','profile'].includes(id)) {
+      replaceAll(id);
+    }
+  };
+
+  const props = { push, pop, replaceAll, booking, setBooking, userMode, setUserMode };
+
+  const SCREENS = {
+    login:        <LoginScreen        {...props} />,
+    register:     <RegisterScreen     {...props} />,
+    forgot:       <ForgotScreen       {...props} />,
+    home:         <HomeScreen         {...props} />,
+    services:     <ServicesScreen     {...props} />,
+    barber:       <BarberScreen       {...props} />,
+    datetime:     <DateTimeScreen     {...props} />,
+    confirm:      <ConfirmScreen      {...props} />,
+    success:      <SuccessScreen      {...props} />,
+    appointments: <AppointmentsScreen {...props} />,
+    profile:      <ProfileScreen      {...props} />,
+    admin:        <AdminScreen        {...props} />,
+  };
+
+  return (
+    <>
+      {/* Stage / centering wrapper */}
+      <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(160deg,#0d0a06 0%,#080604 60%,#0a0709 100%)', padding:14 }}>
+
+        {/* Phone bezel */}
+        <div
+          ref={phoneRef}
+          className="phone"
+          style={{
+            width:390, height:844,
+            position:'relative',
+            background:C.bg,
+            borderRadius:50,
+            border:`1px solid #25201a`,
+            boxShadow:`
+              0 0 0 2px #1a150e,
+              0 0 0 3px #0f0c08,
+              0 60px 130px rgba(0,0,0,0.96),
+              0 20px 40px  rgba(0,0,0,0.7),
+              inset 0 1px 0 rgba(255,255,255,0.05),
+              inset 0 -1px 0 rgba(0,0,0,0.4)
+            `,
+            transformOrigin:'center center',
+            flexShrink:0,
+            overflow:'hidden',
+          }}
+        >
+          {/* Ambient top glow */}
+          <div style={{ position:'absolute', inset:0, background:`radial-gradient(ellipse 280px 100px at 50% 0,rgba(196,145,42,0.08),transparent)`, pointerEvents:'none', zIndex:0 }} />
+
+          {/* Side button highlights */}
+          <div style={{ position:'absolute', left:-2, top:140, width:3, height:60, background:'linear-gradient(to bottom,#2a2520,#3a3028,#2a2520)', borderRadius:'2px 0 0 2px', zIndex:200 }} />
+          <div style={{ position:'absolute', left:-2, top:220, width:3, height:60, background:'linear-gradient(to bottom,#2a2520,#3a3028,#2a2520)', borderRadius:'2px 0 0 2px', zIndex:200 }} />
+          <div style={{ position:'absolute', right:-2, top:180, width:3, height:90, background:'linear-gradient(to bottom,#2a2520,#3a3028,#2a2520)', borderRadius:'0 2px 2px 0', zIndex:200 }} />
+
+          {/* Animated screen with key-based transition */}
+          <div
+            key={current}
+            className={`anim-${dir}`}
+            style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', zIndex:1 }}
+          >
+            {SCREENS[current] || SCREENS.login}
+          </div>
+        </div>
+      </div>
+
+      {/* Screen label hint */}
+      <div className="screen-hint">{SCREEN_LABELS[current]}</div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
