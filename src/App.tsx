@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppointmentProvider } from './contexts/AppointmentContext';
 import { BookingProvider } from './contexts/BookingContext';
 import { AppShell } from './components/PhoneFrame';
+import Layout from './layouts/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -17,24 +18,35 @@ import Success from './pages/Success';
 import Appointments from './pages/Appointments';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import { SidebarProvider } from './ui';
 
-function RequireAuth({ children }: { children: React.ReactNode }) {
+// Requires login + cliente role (redirects barbers to /admin)
+function RequireClient({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  if (user.tipo === 'barbeiro') return <Navigate to="/admin" replace />;
   return <>{children}</>;
 }
 
-import Layout from './layouts/Layout';
+// Requires login + barbeiro role (redirects clients to /home)
+function RequireBarber({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.tipo !== 'barbeiro') return <Navigate to="/home" replace />;
+  return <>{children}</>;
+}
 
 function AppRoutes() {
   return (
     <AppShell>
       <Routes>
+        {/* Public */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot" element={<ForgotPassword />} />
-        
-        <Route element={<RequireAuth><Layout /></RequireAuth>}>
+
+        {/* Cliente routes */}
+        <Route element={<RequireClient><Layout /></RequireClient>}>
           <Route path="/home" element={<Home />} />
           <Route path="/services" element={<Services />} />
           <Route path="/barber" element={<Barber />} />
@@ -43,16 +55,18 @@ function AppRoutes() {
           <Route path="/success" element={<Success />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/profile" element={<Profile />} />
+        </Route>
+
+        {/* Barbeiro / Admin routes */}
+        <Route element={<RequireBarber><Layout /></RequireBarber>}>
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
-        
+
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </AppShell>
   );
 }
-
-import { SidebarProvider } from './ui';
 
 export default function App() {
   return (

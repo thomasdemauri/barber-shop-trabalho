@@ -1,8 +1,11 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { IconHome, IconScissors, IconCalendar, IconUser, IconChevronLeft, IconChevronRight } from './Icons';
+import {
+  IconHome, IconScissors, IconCalendar, IconUser,
+  IconChevronLeft, IconChevronRight, IconLogOut, IconSettings,
+} from './Icons';
 
 type SidebarCtx = { open: boolean; toggle: () => void };
-const Ctx = createContext<SidebarCtx>({ open: true, toggle: () => { } });
+const Ctx = createContext<SidebarCtx>({ open: true, toggle: () => {} });
 export const useSidebar = () => useContext(Ctx);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
@@ -10,21 +13,41 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={{ open, toggle: () => setOpen(p => !p) }}>{children}</Ctx.Provider>;
 }
 
-const ITEMS: { id: string; label: string; Icon: typeof IconHome }[] = [
-  { id: 'home', label: 'Início', Icon: IconHome },
-  { id: 'services', label: 'Agendar', Icon: IconScissors },
-  { id: 'appointments', label: 'Agenda', Icon: IconCalendar },
-  { id: 'profile', label: 'Perfil', Icon: IconUser },
+type NavItem = {
+  id: string;
+  label: string;
+  Icon: typeof IconHome;
+  path: string;
+  matchPath: string;
+};
+
+const CLIENT_ITEMS: NavItem[] = [
+  { id: 'home',         label: 'Início',    Icon: IconHome,     path: 'home',        matchPath: 'home' },
+  { id: 'services',    label: 'Agendar',   Icon: IconScissors, path: 'services',   matchPath: 'services' },
+  { id: 'appointments',label: 'Agenda',    Icon: IconCalendar, path: 'appointments',matchPath: 'appointments' },
+  { id: 'profile',     label: 'Perfil',    Icon: IconUser,     path: 'profile',    matchPath: 'profile' },
+];
+
+const ADMIN_ITEMS: NavItem[] = [
+  { id: 'dash',     label: 'Dashboard', Icon: IconHome,     path: 'admin', matchPath: 'admin' },
+  { id: 'agenda',   label: 'Agenda',    Icon: IconCalendar, path: 'admin', matchPath: '' },
+  { id: 'clientes', label: 'Clientes',  Icon: IconUser,     path: 'admin', matchPath: '' },
+  { id: 'cfg',      label: 'Config',    Icon: IconSettings, path: 'admin', matchPath: '' },
 ];
 
 export function BottomNav({
   current,
   onNav,
+  role = 'cliente',
+  onLogout,
 }: {
   current: string;
-  onNav: (id: string) => void;
+  onNav: (path: string) => void;
+  role?: 'cliente' | 'barbeiro';
+  onLogout?: () => void;
 }) {
   const { open, toggle } = useSidebar();
+  const items = role === 'barbeiro' ? ADMIN_ITEMS : CLIENT_ITEMS;
 
   return (
     <>
@@ -37,13 +60,13 @@ export function BottomNav({
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {ITEMS.map(({ id, label, Icon }) => {
-          const active = current === id;
+        {items.map(({ id, label, Icon, path, matchPath }) => {
+          const active = matchPath !== '' && current === matchPath;
           return (
             <button
               key={id}
               className="tap flex flex-1 flex-col items-center gap-1 border-none bg-transparent py-1 relative"
-              onClick={() => onNav(id)}
+              onClick={() => onNav(path)}
             >
               {active && (
                 <span
@@ -75,8 +98,7 @@ export function BottomNav({
 
       {/* ── Desktop Sidebar ── */}
       <aside
-        className={`hidden md:flex flex-col sticky top-0 h-screen z-40 shrink-0 transition-all duration-300 ease-in-out ${open ? 'w-64' : 'w-[72px]'
-          }`}
+        className={`hidden md:flex flex-col sticky top-0 h-screen z-40 shrink-0 transition-all duration-300 ease-in-out ${open ? 'w-64' : 'w-[72px]'}`}
         style={{
           background: 'var(--color-s1)',
           borderRight: '1px solid var(--color-b1)',
@@ -84,8 +106,7 @@ export function BottomNav({
       >
         {/* Logo */}
         <div
-          className={`flex items-center gap-3 px-4 h-20 shrink-0 transition-all duration-300 ${open ? '' : 'justify-center'
-            }`}
+          className={`flex items-center gap-3 px-4 h-20 shrink-0 transition-all duration-300 ${open ? '' : 'justify-center'}`}
           style={{ borderBottom: '1px solid var(--color-b1)' }}
         >
           <div
@@ -100,22 +121,21 @@ export function BottomNav({
                 Navalha de Ouro
               </span>
               <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: 'var(--color-gold2)' }}>
-                Premium
+                {role === 'barbeiro' ? 'Painel Admin' : 'Premium'}
               </span>
             </div>
           )}
         </div>
 
         {/* Nav items */}
-        <nav className="flex flex-col gap-4 px-3 py-5 flex-1 overflow-y-auto overflow-x-hidden">
-          {ITEMS.map(({ id, label, Icon }) => {
-            const active = current === id;
+        <nav className="flex flex-col gap-1 px-3 py-5 flex-1 overflow-y-auto overflow-x-hidden">
+          {items.map(({ id, label, Icon, path, matchPath }) => {
+            const active = matchPath !== '' && current === matchPath;
             return (
               <button
                 key={id}
-                onClick={() => onNav(id)}
-                className={`tap group relative flex items-center gap-3.5 rounded-xl transition-all duration-200 ${open ? 'px-4 py-3' : 'justify-center px-0 py-3'
-                  }`}
+                onClick={() => onNav(path)}
+                className={`tap group relative flex items-center gap-3.5 rounded-xl transition-all duration-200 ${open ? 'px-4 py-3' : 'justify-center px-0 py-3'}`}
                 style={{
                   background: active ? 'var(--color-goldBg)' : 'transparent',
                   border: `1px solid ${active ? 'rgba(196,145,42,0.2)' : 'transparent'}`,
@@ -130,10 +150,7 @@ export function BottomNav({
                     style={{ background: 'var(--color-gold2)' }}
                   />
                 )}
-                <Icon
-                  size={19}
-                  className="shrink-0 transition-transform duration-200 group-hover:scale-110"
-                />
+                <Icon size={19} className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
                 {open && (
                   <span className="font-sans text-[13px] font-medium whitespace-nowrap">{label}</span>
                 )}
@@ -142,16 +159,26 @@ export function BottomNav({
           })}
         </nav>
 
-        {/* Collapse toggle */}
-        <div className="p-3 shrink-0" style={{ borderTop: '1px solid var(--color-b1)' }}>
+        {/* Footer */}
+        <div className="p-3 shrink-0 flex flex-col gap-2" style={{ borderTop: '1px solid var(--color-b1)' }}>
+          {role === 'barbeiro' && onLogout && (
+            <button
+              onClick={onLogout}
+              className={`tap flex items-center gap-3.5 w-full rounded-xl py-3 font-sans text-sm font-medium transition-all ${open ? 'px-4' : 'justify-center px-0'}`}
+              style={{
+                background: 'var(--color-redBg)',
+                color: 'var(--color-red)',
+                border: '1px solid rgba(192,80,80,0.2)',
+              }}
+            >
+              <IconLogOut size={18} className="shrink-0" />
+              {open && <span>Sair da conta</span>}
+            </button>
+          )}
           <button
             onClick={toggle}
-            className={`tap flex items-center gap-3.5 w-full rounded-xl py-3 font-sans text-sm font-medium transition-all ${open ? 'px-4' : 'justify-center px-0'
-              }`}
-            style={{
-              background: 'var(--color-s2)',
-              color: 'var(--color-cream3)',
-            }}
+            className={`tap flex items-center gap-3.5 w-full rounded-xl py-3 font-sans text-sm font-medium transition-all ${open ? 'px-4' : 'justify-center px-0'}`}
+            style={{ background: 'var(--color-s2)', color: 'var(--color-cream3)' }}
           >
             {open
               ? <><IconChevronLeft size={18} className="shrink-0" /><span>Recolher</span></>

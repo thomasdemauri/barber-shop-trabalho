@@ -39,8 +39,12 @@ function writeUsers(users: User[]) {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     initializeTestData();
-    purgeExpired(); // Clean up any expired data on load
-    return retrieve<User>(SESSION_KEY);
+    purgeExpired();
+    const sessionUser = retrieve<User>(SESSION_KEY);
+    if (!sessionUser) return null;
+    // Refresh session data from localStorage (fixes corrupted names after seed update)
+    const freshUser = readUsers().find(u => u.id === sessionUser.id);
+    return freshUser ?? sessionUser;
   });
 
   useEffect(() => {
@@ -71,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const users = readUsers();
     const newUser: User = {
       id: Date.now().toString(36),
-      nome: u.nome || 'UsuÃ¡rio',
+      nome: u.nome || 'Usuário',
       email: u.email || '',
       telefone: u.telefone || '',
       senha: u.senha || '',
