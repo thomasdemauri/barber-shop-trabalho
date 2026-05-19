@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppointmentProvider } from './contexts/AppointmentContext';
-import { BookingProvider } from './contexts/BookingContext';
+import { BookingProvider, RequireService, RequireBookingComplete } from './contexts/BookingContext';
 import { AppShell } from './components/PhoneFrame';
 import Layout from './layouts/Layout';
 import Login from './pages/Login';
@@ -18,9 +18,11 @@ import Success from './pages/Success';
 import Appointments from './pages/Appointments';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminAgenda from './pages/AdminAgenda';
+import AdminClientes from './pages/AdminClientes';
+import AdminConfig from './pages/AdminConfig';
 import { SidebarProvider } from './ui';
 
-// Requires login + cliente role (redirects barbers to /admin)
 function RequireClient({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -28,7 +30,6 @@ function RequireClient({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Requires login + barbeiro role (redirects clients to /home)
 function RequireBarber({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -49,9 +50,12 @@ function AppRoutes() {
         <Route element={<RequireClient><Layout /></RequireClient>}>
           <Route path="/home" element={<Home />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/barber" element={<Barber />} />
-          <Route path="/datetime" element={<DateTime />} />
-          <Route path="/confirm" element={<Confirm />} />
+
+          {/* Fluxo de agendamento — protegido por guards */}
+          <Route path="/barber"   element={<RequireService><Barber /></RequireService>} />
+          <Route path="/datetime" element={<RequireService><DateTime /></RequireService>} />
+          <Route path="/confirm"  element={<RequireBookingComplete><Confirm /></RequireBookingComplete>} />
+
           <Route path="/success" element={<Success />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/profile" element={<Profile />} />
@@ -60,6 +64,9 @@ function AppRoutes() {
         {/* Barbeiro / Admin routes */}
         <Route element={<RequireBarber><Layout /></RequireBarber>}>
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/agenda" element={<AdminAgenda />} />
+          <Route path="/admin/clientes" element={<AdminClientes />} />
+          <Route path="/admin/config" element={<AdminConfig />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
@@ -97,19 +104,11 @@ export default function App() {
                 },
                 success: {
                   iconTheme: { primary: '#4a9d6e', secondary: '#f0e3c4' },
-                  style: {
-                    background: '#0c2216',
-                    border: '1px solid rgba(74,157,110,0.3)',
-                    color: '#f0e3c4',
-                  },
+                  style: { background: '#0c2216', border: '1px solid rgba(74,157,110,0.3)', color: '#f0e3c4' },
                 },
                 error: {
                   iconTheme: { primary: '#c05050', secondary: '#f0e3c4' },
-                  style: {
-                    background: '#280e0e',
-                    border: '1px solid rgba(192,80,80,0.3)',
-                    color: '#f0e3c4',
-                  },
+                  style: { background: '#280e0e', border: '1px solid rgba(192,80,80,0.3)', color: '#f0e3c4' },
                 },
               }}
             />

@@ -14,6 +14,7 @@ export type Appointment = {
 type AppointmentCtx = {
   appointments: Appointment[];
   create: (svcId: string, iso: string) => Promise<{ ok: boolean; reason?: string; appointment?: Appointment }>;
+  edit: (id: string, svcId: string, iso: string) => Promise<{ ok: boolean; reason?: string }>;
   cancel: (id: string) => void;
   reload: () => void;
 };
@@ -27,6 +28,8 @@ function readAppts(): Appointment[] {
 }
 function writeAppts(a: Appointment[]) {
   localStorage.setItem(APPT_KEY, JSON.stringify(a));
+  // dispara evento para outros componentes (ex: AdminDashboard) sincronizarem
+  window.dispatchEvent(new StorageEvent('storage', { key: APPT_KEY }));
 }
 
 export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -35,7 +38,9 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   useEffect(() => {
     const onStorage = (ev: StorageEvent) => {
-      if (ev.key && ev.key.startsWith('barbershop_')) setAppointments(readAppts());
+      if (ev.key === APPT_KEY || ev.key?.startsWith('barbershop_')) {
+        setAppointments(readAppts());
+      }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
@@ -72,21 +77,44 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
+  const edit = async (id: string, svcId: string, iso: string) => {
+    if (!user) return { ok: false, reason: 'unauthenticated' };
+    const slotKey = `slot_${iso}`;
+    const owner = user.id + '_' + Date.now();
+    const locked = acquireLock(slotKey, owner, 5000);
+    if (!locked) return { ok: false, reason: 'locked' };
+
+    try {
+      const curr = readAppts();
+      const conflict = curr.some(a => a.id !== id && a.data_hora === iso && a.status !== 'canceled');
+      if (conflict) return { ok: false, reason: 'conflict' };
+
+      const next = curr.map(a =>
+        a.id === id ? { ...a, servico_id: svcId, data_hora: iso, status: 'pending' as const } : a
+      );
+      writeAppts(next);
+      setAppointments(next);
+      return { ok: true };
+    } finally {
+      releaseLock(slotKey, owner);
+    }
+  };
+
   const cancel = (id: string) => {
     const curr = readAppts();
     const next = curr.map(a => a.id === id ? { ...a, status: 'canceled' as const } : a);
     writeAppts(next);
-    setAppointments(next as Appointment[]);
+    setAppointments(next);
   };
 
   return (
-    <Ctx.Provider value={{ appointments, create, cancel, reload }}>
+    <Ctx.Provider value={{ appointments, create, edit, cancel, reload }}>
       {children}
     </Ctx.Provider>
   );
 };
 
-export function useAppointments(){
+export function useAppointments() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error('useAppointments must be used inside AppointmentProvider');
   return ctx;

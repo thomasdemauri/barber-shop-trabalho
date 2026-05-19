@@ -1,287 +1,158 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useAppointments } from '../hooks/useAppointments';
+import { SERVICES, C, getDayLabel } from '../data/catalog';
 import { Btn, Badge } from '../ui';
-import {
-  IconBell, IconScissors, IconAward, IconDroplet, IconZap,
-  IconPlus, IconChevronRight, IconStar,
-} from '../ui/Icons';
-import { C, UPCOMING, BARBERS } from '../data/catalog';
+import { IconScissors, IconCalendar, IconUser, IconZap, IconAward, IconClock } from '../ui/Icons';
 
-const QUICK_SERVICES = [
-  { Icon: IconScissors, name: 'Corte', price: 'R$ 40', highlight: false },
-  { Icon: IconScissors, name: 'Barba', price: 'R$ 35', highlight: false },
-  { Icon: IconAward, name: 'Combo', price: 'R$ 65', highlight: true },
-  { Icon: IconDroplet, name: 'Relaxar', price: 'R$ 50', highlight: false },
-  { Icon: IconDroplet, name: 'Hidratação', price: 'R$ 30', highlight: false },
-  { Icon: IconZap, name: 'Pigmento', price: 'R$ 45', highlight: false },
-];
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  return { d: d.getDate(), mon: months[d.getMonth()], time: iso.slice(11, 16) };
+}
 
 export default function Home() {
   const { user } = useAuth();
+  const { appointments } = useAppointments();
   const nav = useNavigate();
-  const next = UPCOMING[0];
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
-  const firstName = user?.nome?.split(' ')[0] || 'Bem-vindo';
+  const now = new Date();
+  const upcoming = appointments.filter(
+    a => a.status !== 'canceled' && new Date(a.data_hora) >= now
+  ).sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime());
+
+  const nextAppt = upcoming[0];
 
   return (
-    <div className="w-full max-w-8xl mx-auto px-6 sm:px-10 lg:px-14 py-8 sm:py-10 lg:py-12">
-
+    <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
       {/* Header */}
-      <header className="flex items-center justify-between mb-8 sm:mb-10">
-        <div>
-          <p
-            className="font-sans text-[11px] sm:text-xs uppercase tracking-[0.2em] font-medium mb-1.5"
-            style={{ color: C.cream3 }}
-          >
-            {greeting}
-          </p>
-          <h1
-            className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold leading-none"
-            style={{ color: C.cream }}
-          >
-            {firstName}
-          </h1>
-        </div>
+      <div className="mb-8">
+        <p className="font-sans text-sm" style={{ color: C.gold }}>Bem-vindo de volta</p>
+        <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-cream mt-1">
+          {user?.nome?.split(' ')[0] || 'Cliente'}
+        </h1>
+      </div>
 
-        <button
-          className="tap relative flex h-11 w-11 items-center justify-center rounded-full transition-colors"
-          style={{ background: C.s2, border: `1px solid ${C.b2}` }}
-        >
-          <IconBell size={19} style={{ color: C.cream2 }} />
-          <span
-            className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full"
-            style={{ background: C.gold, border: `2px solid ${C.bg}` }}
-          />
-        </button>
-      </header>
-
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-
-        {/* ── Promo Banner ── */}
-        <div
-          className="tap relative overflow-hidden rounded-2xl sm:rounded-3xl p-6 sm:p-8 cursor-pointer group lg:col-span-2"
-          onClick={() => nav('/services')}
-          style={{
-            background: `linear-gradient(140deg, ${C.s3} 0%, ${C.goldBg} 55%, #261807 100%)`,
-            border: `1px solid ${C.b2}`,
-          }}
-        >
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+        {[
+          { icon: IconZap, label: 'Próximos', value: String(upcoming.length), color: C.gold },
+          { icon: IconAward, label: 'Serviços', value: String(SERVICES.length), color: C.gold2 },
+          { icon: IconClock, label: 'Horários', value: 'Seg–Sáb', color: C.gold3 },
+        ].map(({ icon: Icon, label, value, color }) => (
           <div
-            className="pointer-events-none absolute -right-10 -top-10 w-52 h-52 rounded-full"
-            style={{ background: `radial-gradient(circle, ${C.gold}30 0%, transparent 70%)` }}
-          />
-          <div
-            className="pointer-events-none absolute right-14 bottom-0 w-32 h-32 rounded-full"
-            style={{ background: `radial-gradient(circle, ${C.gold3}14 0%, transparent 70%)` }}
-          />
-
-          <div className="relative z-10 flex items-end justify-between gap-4">
-            <div>
-              <span
-                className="inline-block font-sans text-[10px] uppercase tracking-[0.22em] font-semibold px-3 py-1 rounded-full mb-4"
-                style={{ background: `${C.gold}1a`, color: C.gold2, border: `1px solid ${C.gold}28` }}
-              >
-                Promoção · Hoje
-              </span>
-              <p
-                className="font-serif font-bold leading-none mb-2.5"
-                style={{ fontSize: 'clamp(2.4rem, 6vw, 3.8rem)', color: C.cream }}
-              >
-                20% OFF
-              </p>
-              <p className="font-sans text-sm sm:text-base" style={{ color: C.cream2 }}>
-                Corte + Barba — combo premium
-              </p>
-            </div>
-
-            <div
-              className="flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-2xl group-hover:scale-105 transition-transform duration-300"
-              style={{ background: `${C.gold}18`, border: `1px solid ${C.gold}30` }}
-            >
-              <IconScissors size={32} style={{ color: C.gold2 }} />
-            </div>
-          </div>
-        </div>
-
-        {/* ── CTA + Next Appointment ── */}
-        <div className="flex flex-col gap-4">
-          <Btn
-            onClick={() => nav('/services')}
-            style={{
-              height: 64,
-              borderRadius: 16,
-              background: `linear-gradient(135deg, ${C.gold} 0%, ${C.gold2} 100%)`,
-              boxShadow: `0 4px 24px ${C.gold}40, 0 1px 0 rgba(255,255,255,0.12) inset`,
-              fontSize: 15,
-              letterSpacing: '0.02em',
-            }}
-          >
-            <span className="flex items-center justify-center gap-2.5">
-              <span
-                className="flex h-7 w-7 items-center justify-center rounded-full"
-                style={{ background: 'rgba(0,0,0,0.18)' }}
-              >
-                <IconPlus size={15} />
-              </span>
-              <span style={{ fontWeight: 700 }}>Novo Agendamento</span>
-            </span>
-          </Btn>
-
-          <div
-            className="tap flex items-center gap-4 rounded-2xl p-4 cursor-pointer transition-colors"
-            onClick={() => nav('/appointments')}
+            key={label}
+            className="flex flex-col items-center gap-1.5 rounded-xl p-4 sm:p-5"
             style={{ background: C.s2, border: `1px solid ${C.b2}` }}
           >
-            <div
-              className="flex h-14 w-12 shrink-0 flex-col items-center justify-center rounded-xl"
-              style={{ background: C.s4, border: `1px solid ${C.b2}` }}
+            <Icon size={22} style={{ color }} />
+            <span className="font-sans text-xl font-bold text-cream">{value}</span>
+            <span className="font-sans text-xs" style={{ color: C.cream3 }}>{label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Next Appointment */}
+      {nextAppt ? (
+        <div className="rounded-xl p-5 mb-8" style={{ background: C.goldBg, border: `1px solid ${C.gold}28` }}>
+          <div className="flex items-center gap-2 mb-3">
+            <IconCalendar size={16} style={{ color: C.gold }} />
+            <span className="font-sans text-xs font-semibold uppercase tracking-wider" style={{ color: C.gold }}>
+              Próximo Agendamento
+            </span>
+          </div>
+          {(() => {
+            const { d, mon, time } = formatDate(nextAppt.data_hora);
+            const svc = SERVICES.find(s => String(s.id) === nextAppt.servico_id);
+            return (
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-12 shrink-0 flex-col items-center justify-center rounded-lg" style={{ background: C.s4, border: `1px solid ${C.b2}` }}>
+                  <span className="font-sans text-lg font-bold leading-none" style={{ color: C.gold2 }}>{d}</span>
+                  <span className="mt-0.5 font-sans text-[9px] uppercase" style={{ color: C.cream3 }}>{mon}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-sans text-sm font-semibold text-cream truncate">{svc?.name || 'Serviço'}</p>
+                  <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>{time}</p>
+                </div>
+                <Badge status={nextAppt.status} />
+              </div>
+            );
+          })()}
+        </div>
+      ) : (
+        <div className="rounded-xl p-5 mb-8" style={{ background: C.s2, border: `1px solid ${C.b2}` }}>
+          <div className="flex flex-col items-center gap-3 py-4">
+            <IconCalendar size={32} style={{ color: C.cream3 }} />
+            <p className="font-sans text-sm" style={{ color: C.cream3 }}>Nenhum agendamento próximo</p>
+            <Btn
+              onClick={() => nav('/services')}
+              style={{ background: `linear-gradient(135deg, ${C.gold} 0%, ${C.gold2} 100%)`, color: '#0b0907', height: 44, borderRadius: 12 }}
             >
-              <span
-                className="font-sans text-xl font-bold leading-none"
-                style={{ color: C.gold2 }}
-              >
-                {next.d}
-              </span>
-              <span
-                className="font-sans text-[9px] uppercase tracking-wide mt-0.5"
-                style={{ color: C.cream3 }}
-              >
-                {next.mon}
-              </span>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <p
-                className="font-sans text-sm font-semibold truncate mb-0.5"
-                style={{ color: C.cream }}
-              >
-                {next.svc}
-              </p>
-              <p className="font-sans text-xs" style={{ color: C.cream3 }}>
-                {next.barber} · {next.time}
-              </p>
-            </div>
-
-            <div className="flex flex-col items-end gap-2 shrink-0">
-              <Badge status={next.status} />
-              <IconChevronRight size={14} style={{ color: C.cream3 }} />
-            </div>
+              Agendar agora
+            </Btn>
           </div>
         </div>
+      )}
 
-        {/* ── Quick Services ── */}
-        <section className="lg:col-span-3">
-          <div className="flex items-center justify-between mb-4">
-            <h2
-              className="font-sans text-xs sm:text-sm font-semibold uppercase tracking-[0.18em]"
-              style={{ color: C.cream }}
-            >
-              Serviços
-            </h2>
+      {/* Services Grid */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-serif text-lg font-bold text-cream">Nossos Serviços</h2>
+          <button
+            className="tap font-sans text-xs font-semibold border-none bg-transparent"
+            style={{ color: C.gold }}
+            onClick={() => nav('/services')}
+          >
+            Ver todos
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {SERVICES.slice(0, 3).map(svc => (
             <button
-              className="tap font-sans text-xs font-medium transition-opacity hover:opacity-80"
-              style={{ color: C.gold2 }}
+              key={svc.id}
+              className="tap flex items-center gap-3 rounded-xl p-4 transition-all text-left"
+              style={{ background: C.s2, border: `1px solid ${C.b2}` }}
               onClick={() => nav('/services')}
             >
-              Ver todos →
-            </button>
-          </div>
-
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-            {QUICK_SERVICES.map((s) => (
-              <button
-                key={s.name}
-                className="tap flex flex-col items-center gap-2 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:scale-[1.03] active:scale-[0.97] transition-transform"
-                onClick={() => nav('/services')}
-                style={{
-                  background: s.highlight ? C.goldBg : C.s2,
-                  border: `1px solid ${s.highlight ? `${C.gold}44` : C.b1}`,
-                }}
-              >
-                <s.Icon size={22} style={{ color: s.highlight ? C.gold2 : C.cream3 }} />
-                <span
-                  className="font-sans text-[11px] sm:text-xs font-semibold leading-tight text-center"
-                  style={{ color: s.highlight ? C.gold2 : C.cream }}
-                >
-                  {s.name}
-                </span>
-                <span
-                  className="font-sans text-[10px]"
-                  style={{ color: s.highlight ? `${C.gold3}bb` : C.cream3 }}
-                >
-                  {s.price}
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Barbers ── */}
-        <section className="lg:col-span-3">
-          <div className="flex items-center justify-between mb-4">
-            <h2
-              className="font-sans text-xs sm:text-sm font-semibold uppercase tracking-[0.18em]"
-              style={{ color: C.cream }}
-            >
-              Nossos Barbeiros
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            {BARBERS.map((b) => (
-              <div
-                key={b.id}
-                className="tap flex items-center gap-4 rounded-2xl p-4 cursor-pointer transition-colors"
-                onClick={() => nav('/barber')}
-                style={{ background: C.s2, border: `1px solid ${C.b2}` }}
-              >
-                <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-sans text-sm font-bold"
-                  style={{
-                    background: C.goldBg,
-                    border: `1px solid ${C.gold}2e`,
-                    color: C.gold2,
-                  }}
-                >
-                  {b.icon}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="font-sans text-sm font-semibold truncate mb-0.5"
-                    style={{ color: C.cream }}
-                  >
-                    {b.name}
-                  </p>
-                  <p
-                    className="font-sans text-[11px] truncate mb-1.5"
-                    style={{ color: C.cream3 }}
-                  >
-                    {b.specialty}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <IconStar size={11} style={{ color: C.gold }} />
-                    <span
-                      className="font-sans text-[11px] font-semibold"
-                      style={{ color: C.gold2 }}
-                    >
-                      {b.rating}
-                    </span>
-                    <span className="font-sans text-[10px]" style={{ color: C.cream3 }}>
-                      ({b.reviews})
-                    </span>
-                  </div>
-                </div>
-
-                <IconChevronRight size={16} style={{ color: C.cream3 }} className="shrink-0" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ background: C.goldBg, border: `1px solid ${C.gold}28` }}>
+                <IconScissors size={18} style={{ color: C.gold }} />
               </div>
-            ))}
-          </div>
-        </section>
+              <div className="flex-1 min-w-0">
+                <p className="font-sans text-sm font-semibold text-cream truncate">{svc.name}</p>
+                <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>{svc.desc}</p>
+              </div>
+              <span className="font-sans text-sm font-bold shrink-0" style={{ color: C.gold2 }}>R$ {svc.price}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
+      {/* Quick Actions */}
+      <div className="flex flex-col gap-2">
+        <Btn
+          onClick={() => nav('/services')}
+          style={{
+            height: 56,
+            borderRadius: 14,
+            background: `linear-gradient(135deg, ${C.gold} 0%, ${C.gold2} 100%)`,
+            boxShadow: `0 4px 20px ${C.gold}35`,
+          }}
+        >
+          <span className="flex items-center justify-center gap-2.5">
+            <IconScissors size={18} style={{ color: '#0b0907' }} />
+            <span style={{ fontWeight: 700, color: '#0b0907' }}>Agendar Corte</span>
+          </span>
+        </Btn>
+        <Btn
+          variant="secondary"
+          onClick={() => nav('/appointments')}
+          style={{ height: 52, borderRadius: 14 }}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <IconCalendar size={16} />
+            Ver Agendamentos
+          </span>
+        </Btn>
       </div>
     </div>
   );
