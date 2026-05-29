@@ -38,7 +38,7 @@ export default function Confirm() {
     const y = booking.year ?? 2026;
     const m = (booking.month ?? 4) + 1; // month 1-12
     const iso = `${y}-${String(m).padStart(2, '0')}-${String(date).padStart(2, '0')}T${time}:00`;
-    const res = await create(String(service.id), iso);
+    const res = await create(String(service.id), iso, barber?.name || 'Primeiro disponível');
     setLoading(false);
     if (res.ok) {
       clear();

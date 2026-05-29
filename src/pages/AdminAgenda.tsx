@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { useAppointments } from '../hooks/useAppointments';
 import { Btn } from '../ui';
 import { C, SERVICES, DOW_NAMES } from '../data/catalog';
-import { IconChevronLeft, IconChevronRight, IconClock, IconCheck, IconUser, IconFileText, IconCalendar, IconX } from '../ui/Icons';
+import { IconChevronLeft, IconChevronRight, IconClock, IconCheck, IconUser, IconFileText, IconCalendar, IconX, IconScissors } from '../ui/Icons';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -164,6 +164,7 @@ export default function AdminAgenda() {
             const svc = SERVICES.find(s => String(s.id) === appt.servico_id);
             const userData = userMap.get(appt.usuario_id);
             const clientLabel = userData?.nome || appt.cliente_nome || userData?.email || appt.cliente_email || `Cliente #${appt.usuario_id.slice(0, 6)}`;
+            const barberLabel = appt.barbeiro_nome || 'Primeiro disponível';
             const time = appt.data_hora.slice(11, 16);
             const isOpen = openId === appt.id;
             const isPast = new Date(appt.data_hora) < new Date();
@@ -197,6 +198,9 @@ export default function AdminAgenda() {
                     <div className="font-sans text-xs" style={{ color: C.cream3 }}>
                       <IconUser size={11} className="inline mr-1" />{clientLabel}
                     </div>
+                    <div className="font-sans text-[11px]" style={{ color: C.cream3 }}>
+                      <IconScissors size={11} className="inline mr-1" />{barberLabel}
+                    </div>
                     <div className="font-sans text-sm font-bold tabular-nums mt-0.5" style={{ color: C.gold2 }}>
                       R$ {svc?.price ?? 0},00
                     </div>
@@ -213,6 +217,7 @@ export default function AdminAgenda() {
                     </div>
                     <div className="mb-4 rounded-xl p-3 font-sans text-sm space-y-1.5" style={{ background: C.s3, color: C.cream }}>
                       <div className="flex items-center gap-2"><IconUser size={13} style={{ color: C.cream3 }} /> {clientLabel}</div>
+                      <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}><IconScissors size={12} /> {barberLabel}</div>
                       {(userData?.email || appt.cliente_email) && <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>{userData?.email || appt.cliente_email}</div>}
                       {userData?.telefone && <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>{userData.telefone}</div>}
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>

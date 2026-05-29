@@ -64,6 +64,7 @@ export default function Home() {
           {(() => {
             const { d, mon, time } = formatDate(nextAppt.data_hora);
             const svc = SERVICES.find(s => String(s.id) === nextAppt.servico_id);
+            const barberName = nextAppt.barbeiro_nome || 'Primeiro disponível';
             return (
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-12 shrink-0 flex-col items-center justify-center rounded-lg" style={{ background: C.s4, border: `1px solid ${C.b2}` }}>
@@ -73,6 +74,9 @@ export default function Home() {
                 <div className="flex-1 min-w-0">
                   <p className="font-sans text-sm font-semibold text-cream truncate">{svc?.name || 'Serviço'}</p>
                   <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>{time}</p>
+                  <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>
+                    <IconUser size={11} className="inline mr-1" />{barberName}
+                  </p>
                 </div>
                 <Badge status={nextAppt.status} />
               </div>

@@ -7,6 +7,7 @@ export type Appointment = {
   usuario_id: string;
   cliente_email?: string;
   cliente_nome?: string;
+  barbeiro_nome?: string;
   servico_id: string;
   data_hora: string; // ISO
   status: 'pending' | 'confirmed' | 'canceled';
@@ -15,7 +16,7 @@ export type Appointment = {
 
 type AppointmentCtx = {
   appointments: Appointment[];
-  create: (svcId: string, iso: string) => Promise<{ ok: boolean; reason?: string; appointment?: Appointment }>;
+  create: (svcId: string, iso: string, barberName?: string) => Promise<{ ok: boolean; reason?: string; appointment?: Appointment }>;
   edit: (id: string, svcId: string, iso: string) => Promise<{ ok: boolean; reason?: string }>;
   cancel: (id: string) => void;
   reload: () => void;
@@ -50,7 +51,7 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const reload = () => setAppointments(readAppts());
 
-  const create = async (svcId: string, iso: string) => {
+  const create = async (svcId: string, iso: string, barberName?: string) => {
     if (!user) return { ok: false, reason: 'unauthenticated' };
     const slotKey = `slot_${iso}`;
     const owner = user.id + '_' + Date.now();
@@ -67,6 +68,7 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
         usuario_id: user.id,
         cliente_email: user.email,
         cliente_nome: user.nome,
+        barbeiro_nome: barberName || 'Primeiro disponível',
         servico_id: svcId,
         data_hora: iso,
         status: 'confirmed',

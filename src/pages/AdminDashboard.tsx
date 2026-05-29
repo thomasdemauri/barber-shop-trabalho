@@ -91,6 +91,7 @@ export default function AdminDashboard() {
   const ApptCard = ({ appt, showDetail = true }: { appt: any; showDetail?: boolean }) => {
     const { day, mon, time } = formatAppt(appt.data_hora);
     const svc = SERVICES.find(s => String(s.id) === appt.servico_id);
+    const barberLabel = appt.barbeiro_nome || 'Primeiro disponível';
     const isOpen = openId === appt.id;
     const isPast = new Date(appt.data_hora) < now;
     const color = STATUS_COLORS[appt.status] || C.cream3;
@@ -126,6 +127,9 @@ export default function AdminDashboard() {
             <div className="font-sans text-xs" style={{ color: C.cream3 }}>
               <IconClock size={11} className="inline mr-1" />{time} · {svc?.duration ?? 40} min
             </div>
+            <div className="font-sans text-[11px]" style={{ color: C.cream3 }}>
+              <IconScissors size={11} className="inline mr-1" />{barberLabel}
+            </div>
             <div className="font-sans text-sm font-bold tabular-nums mt-0.5" style={{ color: C.gold2 }}>
               R$ {svc?.price ?? 0},00
             </div>
@@ -147,6 +151,7 @@ export default function AdminDashboard() {
               {(appt.cliente_email || appt.usuario_id) && (
                 <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>{appt.cliente_email || appt.usuario_id}</div>
               )}
+              <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}><IconScissors size={12} /> {barberLabel}</div>
               <div className="flex items-center gap-2"><IconClock size={13} style={{ color: C.cream3 }} /> Criado: {new Date(appt.data_criacao).toLocaleString('pt-BR')}</div>
             </div>
             {!isPast && (
