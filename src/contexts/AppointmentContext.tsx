@@ -71,7 +71,7 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
         barbeiro_nome: barberName || 'Primeiro disponível',
         servico_id: svcId,
         data_hora: iso,
-        status: 'confirmed',
+        status: 'pending',
         data_criacao: new Date().toISOString(),
       };
       const next = [...curr, ap];
