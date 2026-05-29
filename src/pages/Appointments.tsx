@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Btn, Badge } from '../ui';
 import { IconPlus } from '../ui/Icons';
-import { C, SERVICES, TIME_SLOTS, CAL_DAYS, getDayLabel } from '../data/catalog';
+import { C, SERVICES, TIME_SLOTS, generateCalendar, DOW_NAMES, MONTH_NAMES, type CalDay } from '../data/catalog';
 import { useAppointments } from '../hooks/useAppointments';
 import type { Appointment } from '../contexts/AppointmentContext';
 
@@ -63,6 +63,8 @@ function EditModal({ appt, onClose }: { appt: Appointment; onClose: () => void }
   const { edit } = useAppointments();
   const svcAtual = SERVICES.find(s => String(s.id) === appt.servico_id);
   const dataAtual = new Date(appt.data_hora);
+  const editYear = dataAtual.getFullYear();
+  const editMonth = dataAtual.getMonth();
 
   const [svcId, setSvcId] = useState(appt.servico_id);
   const [day, setDay] = useState(dataAtual.getDate());
@@ -71,11 +73,13 @@ function EditModal({ appt, onClose }: { appt: Appointment; onClose: () => void }
   const [loading, setLoading] = useState(false);
 
   const svcSel = SERVICES.find(s => String(s.id) === svcId)!;
-  const availableDays = CAL_DAYS.filter(d => d && d.available) as NonNullable<typeof CAL_DAYS[0]>[];
+  const availableDays = generateCalendar(editMonth, editYear, new Date()).filter(
+    (d): d is NonNullable<CalDay> => !!d && (d.available || d.d === dataAtual.getDate())
+  );
 
   const handleSave = async () => {
     setLoading(true);
-    const iso = `2026-05-${String(day).padStart(2, '0')}T${time}:00`;
+    const iso = `${editYear}-${String(editMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${time}:00`;
     const res = await edit(appt.id, svcId, iso);
     setLoading(false);
     if (res.ok) {
@@ -156,7 +160,7 @@ function EditModal({ appt, onClose }: { appt: Appointment; onClose: () => void }
                       onClick={() => setDay(cd.d)}
                     >
                       <span className="font-sans text-[10px] uppercase" style={{ color: day === cd.d ? '#0b0907' : C.cream3 }}>
-                        {getDayLabel(cd.d)}
+                        {DOW_NAMES[cd.dow]}
                       </span>
                       <span className="font-sans text-base font-bold" style={{ color: day === cd.d ? '#0b0907' : C.cream }}>
                         {cd.d}
@@ -195,7 +199,7 @@ function EditModal({ appt, onClose }: { appt: Appointment; onClose: () => void }
                 {[
                   ['Serviço anterior', svcAtual?.name ?? '-'],
                   ['Novo serviço', svcSel?.name ?? '-'],
-                  ['Nova data', `${getDayLabel(day)}, ${day} de Maio`],
+                  ['Nova data', `${DOW_NAMES[new Date(editYear, editMonth, day).getDay()]}, ${day} de ${MONTH_NAMES[editMonth]}`],
                   ['Novo horário', time],
                   ['Novo valor', `R$ ${svcSel?.price ?? 0},00`],
                 ].map(([k, v], i, arr) => (
