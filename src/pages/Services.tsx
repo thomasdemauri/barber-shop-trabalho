@@ -20,7 +20,7 @@ export default function Services() {
 
   return (
     <>
-      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-24">
+      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-40 sm:pb-24">
         <BackBar title="Escolha o Serviço" onBack={() => nav(-1 as any)} />
 
         {/* Search */}
@@ -101,7 +101,7 @@ export default function Services() {
 
       {/* Floating Continue Button */}
       {selected && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-5 bg-s1/80 backdrop-blur-md border-t border-b1 z-50">
+        <div className="fixed bottom-20 sm:bottom-0 left-0 right-0 p-4 sm:p-5 bg-s1/80 backdrop-blur-md border-t border-b1 z-50">
           <div className="max-w-lg mx-auto">
             <Btn onClick={() => nav('/barber')}>Continuar → {selected.name}</Btn>
           </div>

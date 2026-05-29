@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../hooks/useBooking';
 import { BackBar, Btn } from '../ui';
 import { C, TIME_SLOTS, BUSY, generateCalendar, getMonthLabel, DOW_NAMES } from '../data/catalog';
+import { useAppointments } from '../hooks/useAppointments';
 import { useEffect, useState } from 'react';
 
 export default function DateTime() {
@@ -42,13 +43,13 @@ export default function DateTime() {
   }, [selDate, dayAvailable]);
 
   // Build set of taken times for the currently selected day (reads stored appointments)
+  const { appointments } = useAppointments();
+
   const takenTimes = (() => {
     const s = new Set<string>();
     if (!dayObj) return s;
     try {
-      const raw = localStorage.getItem('barbershop_appointments') || '[]';
-      const appts = JSON.parse(raw) as any[];
-      for (const a of appts) {
+      for (const a of appointments) {
         if (!a || a.status === 'canceled' || !a.data_hora) continue;
         const dt = new Date(a.data_hora);
         if (
@@ -59,13 +60,13 @@ export default function DateTime() {
           s.add(a.data_hora.slice(11, 16));
         }
       }
-    } catch { /* ignore parse errors */ }
+    } catch { /* ignore errors */ }
     return s;
   })();
 
   return (
     <>
-      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-24">
+      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-40 sm:pb-24">
         <BackBar title="Data e Horário" onBack={() => nav(-1 as any)} />
 
         <div className="mt-6 flex flex-col gap-8">
@@ -195,7 +196,7 @@ export default function DateTime() {
       </div>
 
       {selDate && selTime && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-s1/80 backdrop-blur-md border-t border-b1 z-50">
+        <div className="fixed bottom-20 sm:bottom-0 left-0 right-0 p-4 sm:p-6 bg-s1/80 backdrop-blur-md border-t border-b1 z-50">
           <div className="max-w-screen-md mx-auto">
             <Btn onClick={() => nav('/confirm')} style={{ height: 56, fontSize: 16 }}>Confirmar Horário → {selTime}</Btn>
           </div>

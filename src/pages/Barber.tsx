@@ -14,7 +14,7 @@ export default function Barber() {
 
   return (
     <>
-      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-24">
+      <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-40 sm:pb-24">
         <BackBar title="Escolha o Barbeiro" onBack={() => nav(-1 as any)} />
 
         <div className="mt-6 flex flex-col">
@@ -104,7 +104,7 @@ export default function Barber() {
       </div>
 
       {canContinue && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 bg-s1/80 backdrop-blur-md border-t border-b1 z-50">
+        <div className="fixed bottom-20 sm:bottom-0 left-0 right-0 p-4 sm:p-6 bg-s1/80 backdrop-blur-md border-t border-b1 z-50">
           <div className="max-w-screen-md mx-auto">
             <Btn onClick={() => nav('/datetime')} style={{ height: 56, fontSize: 16 }}>Escolher Horário</Btn>
           </div>
