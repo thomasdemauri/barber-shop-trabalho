@@ -5,6 +5,8 @@ type Booking = {
   service?: any;
   barber?: any;
   date?: string;
+  month?: number; // 0-11
+  year?: number;
   time?: string;
 };
 

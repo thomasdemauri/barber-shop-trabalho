@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useBooking } from '../hooks/useBooking';
 import { useAppointments } from '../hooks/useAppointments';
 import { BackBar, Btn } from '../ui';
-import { C, getDayLabel, SVC_DUR } from '../data/catalog';
+import { C, SVC_DUR, DOW_NAMES, MONTH_NAMES } from '../data/catalog';
 import { IconCreditCard } from '../ui/Icons';
 
 export default function Confirm() {
@@ -16,17 +16,28 @@ export default function Confirm() {
   const { service, barber, date, time } = booking;
   const dur = SVC_DUR[service?.id as number] || '40 min';
 
+  const monthName = MONTH_NAMES[(booking.month ?? 4)];
+  const dowLabel = (() => {
+    const y = booking.year ?? 2026;
+    const m = booking.month ?? 4;
+    const d = Number(date);
+    const dt = new Date(y, m, d);
+    return DOW_NAMES[dt.getDay()];
+  })();
+
   const rows = [
     ['Serviço', service?.name],
     ['Barbeiro', barber?.name || 'Primeiro disponível'],
-    ['Data', `${getDayLabel(Number(date))}, ${date} de Maio`],
+    ['Data', `${dowLabel}, ${date} de ${monthName}`],
     ['Horário', `${time} · ${dur}`],
   ];
 
   const handleConfirm = async () => {
     if (!service || !date || !time) return;
     setLoading(true);
-    const iso = `2026-05-${String(date).padStart(2, '0')}T${time}:00`;
+    const y = booking.year ?? 2026;
+    const m = (booking.month ?? 4) + 1; // month 1-12
+    const iso = `${y}-${String(m).padStart(2, '0')}-${String(date).padStart(2, '0')}T${time}:00`;
     const res = await create(String(service.id), iso);
     setLoading(false);
     if (res.ok) {

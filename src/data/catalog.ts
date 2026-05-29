@@ -79,6 +79,34 @@ export const CAL_DAYS: CalDay[] = (() => {
   return arr;
 })();
 
+// Generic calendar generator for any month/year
+export function generateCalendar(month: number, year: number, today?: Date): CalDay[] {
+  const arr: CalDay[] = [];
+  const first = new Date(year, month, 1);
+  const firstDow = first.getDay(); // 0=Sun .. 6=Sat
+  // leading empty slots
+  for (let i = 0; i < firstDow; i++) arr.push(null);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayDay = today ? (today.getFullYear() === year && today.getMonth() === month ? today.getDate() : -1) : -1;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = (firstDow + d - 1) % 7;
+    arr.push({
+      d,
+      dow,
+      isWeekend: dow === 0 || dow === 6,
+      isPast: today ? (year < today.getFullYear() || (year === today.getFullYear() && (month < today.getMonth() || (month === today.getMonth() && d < todayDay)))) : false,
+      isToday: d === todayDay,
+      available: !((dow === 0 || dow === 6) || (today ? (d < todayDay && month === today.getMonth() && year === today.getFullYear()) : false)),
+    });
+  }
+  return arr;
+}
+
+export const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+export function getMonthLabel(month: number, year: number) {
+  return `${MONTH_NAMES[month]} ${year}`;
+}
+
 export const DOW_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 export const getDayLabel = (d: number) => DOW_NAMES[(5 + d - 1) % 7];
 

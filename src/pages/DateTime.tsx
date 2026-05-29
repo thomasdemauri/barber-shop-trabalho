@@ -1,13 +1,67 @@
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../hooks/useBooking';
 import { BackBar, Btn } from '../ui';
-import { C, CAL_DAYS, TIME_SLOTS, BUSY, getDayLabel } from '../data/catalog';
+import { C, TIME_SLOTS, BUSY, generateCalendar, getMonthLabel, DOW_NAMES } from '../data/catalog';
+import { useEffect, useState } from 'react';
 
 export default function DateTime() {
   const { booking, setBooking } = useBooking();
   const nav = useNavigate();
   const selDate = booking.date ? Number(booking.date) : undefined;
   const selTime = booking.time;
+
+  // View month state for calendar navigation
+  const initialView = (() => {
+    if (booking.month !== undefined && booking.year !== undefined) return new Date(booking.year, booking.month, 1);
+    return new Date();
+  })();
+  const [viewDate, setViewDate] = useState(() => initialView);
+  const [calDays, setCalDays] = useState(() => generateCalendar(initialView.getMonth(), initialView.getFullYear(), new Date()));
+
+  useEffect(() => {
+    setCalDays(generateCalendar(viewDate.getMonth(), viewDate.getFullYear(), new Date()));
+  }, [viewDate]);
+
+  // Keep viewDate in sync when booking month/year changes (e.g., coming back from confirm)
+  useEffect(() => {
+    if (booking.month !== undefined && booking.year !== undefined) {
+      const bv = new Date(booking.year, booking.month, 1);
+      setViewDate(bv);
+    }
+  }, [booking.month, booking.year]);
+
+  // Resolve selected day object and availability
+  const dayObj = selDate ? (calDays.find(d => d && d.d === selDate) as any) : null;
+  const dayAvailable = !!dayObj && dayObj.available;
+
+  // If selected day becomes unavailable, clear selected time
+  useEffect(() => {
+    if (selDate && !dayAvailable) {
+      setBooking((b: any) => ({ ...b, time: null }));
+    }
+  }, [selDate, dayAvailable]);
+
+  // Build set of taken times for the currently selected day (reads stored appointments)
+  const takenTimes = (() => {
+    const s = new Set<string>();
+    if (!dayObj) return s;
+    try {
+      const raw = localStorage.getItem('barbershop_appointments') || '[]';
+      const appts = JSON.parse(raw) as any[];
+      for (const a of appts) {
+        if (!a || a.status === 'canceled' || !a.data_hora) continue;
+        const dt = new Date(a.data_hora);
+        if (
+          dt.getFullYear() === viewDate.getFullYear() &&
+          dt.getMonth() === viewDate.getMonth() &&
+          dt.getDate() === dayObj.d
+        ) {
+          s.add(a.data_hora.slice(11, 16));
+        }
+      }
+    } catch { /* ignore parse errors */ }
+    return s;
+  })();
 
   return (
     <>
@@ -18,9 +72,21 @@ export default function DateTime() {
           {/* Calendar */}
           <div className="rounded-2xl sm:rounded-3xl p-5 sm:p-8" style={{ background: C.s2, border: `1px solid ${C.b1}` }}>
             <div className="mb-6 flex items-center justify-between px-2">
-              <button className="tap border-none bg-transparent text-2xl sm:text-3xl leading-none text-cream3 hover:text-cream">←</button>
-              <span className="font-sans text-base sm:text-lg font-bold text-cream">Maio 2026</span>
-              <button className="tap border-none bg-transparent text-2xl sm:text-3xl leading-none text-cream3 hover:text-cream">→</button>
+              <button
+                className="tap border-none bg-transparent text-2xl sm:text-3xl leading-none text-cream3 hover:text-cream"
+                onClick={() => {
+                  setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+                  setBooking((b: any) => ({ ...b, date: null, month: undefined, year: undefined, time: null }));
+                }}
+              >←</button>
+              <span className="font-sans text-base sm:text-lg font-bold text-cream">{getMonthLabel(viewDate.getMonth(), viewDate.getFullYear())}</span>
+              <button
+                className="tap border-none bg-transparent text-2xl sm:text-3xl leading-none text-cream3 hover:text-cream"
+                onClick={() => {
+                  setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+                  setBooking((b: any) => ({ ...b, date: null, month: undefined, year: undefined, time: null }));
+                }}
+              >→</button>
             </div>
             {/* Day headers */}
             <div className="mb-3 grid grid-cols-7 gap-2">
@@ -30,7 +96,7 @@ export default function DateTime() {
             </div>
             {/* Days */}
             <div className="grid grid-cols-7 gap-2 sm:gap-3">
-              {CAL_DAYS.map((day, i) => {
+              {calDays.map((day, i) => {
                 if (!day) return <div key={i} />;
                 const isSel = selDate === day.d;
                 const avail = day.available;
@@ -38,7 +104,7 @@ export default function DateTime() {
                   <button
                     key={i}
                     className={avail ? 'tap hover:ring-2 ring-gold/30' : ''}
-                    onClick={() => avail && setBooking((b: any) => ({ ...b, date: b.date === day.d ? null : day.d, time: null }))}
+                      onClick={() => avail && setBooking((b: any) => ({ ...b, date: b.date === day.d ? null : day.d, month: viewDate.getMonth(), year: viewDate.getFullYear(), time: null }))}
                     style={{
                       aspectRatio: '1',
                       borderRadius: 12,
@@ -56,7 +122,7 @@ export default function DateTime() {
                       transition: 'all 0.2s',
                     }}
                   >
-                    {day.d}
+                      {day.d}
                   </button>
                 );
               })}
@@ -67,29 +133,44 @@ export default function DateTime() {
           {selDate && (
             <div className="animate-fade-up">
               <div className="mb-4 font-sans text-base sm:text-lg font-semibold text-cream">
-                {getDayLabel(selDate)}, {selDate} de Maio — Horários
+                {(() => {
+                  const dayObj = calDays.find(d => d && d.d === selDate) as any;
+                  const label = dayObj ? DOW_NAMES[dayObj.dow] : '';
+                  return `${label}, ${selDate} de ${getMonthLabel(viewDate.getMonth(), viewDate.getFullYear()).split(' ')[0]} — Horários`;
+                })()}
               </div>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
                 {TIME_SLOTS.map((t) => {
-                  const isBusy = BUSY.has(t);
+                  // if the day itself is unavailable, treat all slots as busy
+                  // Special override: force-disable 18/06 at 10:00
+                  const isOverrideBlocked = (() => {
+                    try {
+                      // month index: 5 = June
+                      return viewDate.getMonth() === 5 && dayObj && dayObj.d === 18 && t === '10:00';
+                    } catch { return false; }
+                  })();
+                  const isBusy = !dayAvailable || BUSY.has(t) || isOverrideBlocked || takenTimes.has(t);
                   const isSel = selTime === t;
                   return (
                     <button
                       key={t}
                       className={!isBusy ? 'tap hover:scale-105' : ''}
+                      aria-disabled={isBusy}
+                      title={isOverrideBlocked ? 'Horário bloqueado (manualmente desativado)' : undefined}
                       onClick={() => !isBusy && setBooking((b: any) => ({ ...b, time: b.time === t ? null : t }))}
                       style={{
                         height: 48,
                         borderRadius: 12,
-                        background: isSel ? C.gold : isBusy ? C.s1 : C.s2,
+                        background: isSel ? C.gold : isBusy ? C.s3 : C.s2,
                         border: `1px solid ${isSel ? C.gold : isBusy ? C.b1 : C.b2}`,
                         fontFamily: 'var(--font-sans)',
                         fontSize: 15,
                         fontWeight: isSel ? 700 : 500,
                         color: isSel ? '#0b0907' : isBusy ? C.cream3 : C.cream,
-                        opacity: isBusy ? 0.4 : 1,
+                        opacity: isBusy ? 0.28 : 1,
                         cursor: isBusy ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s',
+                        transition: 'all 0.12s',
+                        transform: isBusy ? 'scale(0.98)' : 'none',
                       }}
                     >
                       {t}
@@ -97,6 +178,12 @@ export default function DateTime() {
                   );
                 })}
               </div>
+
+              {!dayAvailable && (
+                <div className="text-center font-sans text-sm text-cream3 mb-4">
+                  Este dia está indisponível — não há horários disponíveis.
+                </div>
+              )}
               <div className="flex gap-6 font-sans text-xs sm:text-sm text-cream3 mt-6 justify-center sm:justify-start">
                 <span className="flex items-center gap-1.5"><span className="block w-3 h-3 rounded-sm border" style={{ borderColor: C.b2 }}></span> Disponível</span>
                 <span className="flex items-center gap-1.5" style={{ color: C.gold2 }}><span className="block w-3 h-3 rounded-sm" style={{ background: C.gold2 }}></span> Selecionado</span>
