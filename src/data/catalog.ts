@@ -50,7 +50,8 @@ export const TIME_SLOTS = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
   '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00',
 ];
-export const BUSY = new Set(['09:00', '09:30', '11:00', '15:30']);
+// export const BUSY = new Set(['09:00', '09:30', '15:30']);
+export const BUSY = new Set([]);
 
 // Calendar Data (May 2026)
 // May 1, 2026 = Friday (dow=5)
