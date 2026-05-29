@@ -31,7 +31,7 @@ const FILTERS: { key: Filter; label: string }[] = [
 ];
 
 export default function AdminAgenda() {
-  const { appointments, cancel, edit } = useAppointments();
+  const { appointments, cancel } = useAppointments();
   const [baseDate, setBaseDate] = useState(() => new Date());
   const [openId, setOpenId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -163,6 +163,7 @@ export default function AdminAgenda() {
           filtered.map(appt => {
             const svc = SERVICES.find(s => String(s.id) === appt.servico_id);
             const userData = userMap.get(appt.usuario_id);
+            const clientLabel = userData?.nome || appt.cliente_nome || userData?.email || appt.cliente_email || `Cliente #${appt.usuario_id.slice(0, 6)}`;
             const time = appt.data_hora.slice(11, 16);
             const isOpen = openId === appt.id;
             const isPast = new Date(appt.data_hora) < new Date();
@@ -194,7 +195,7 @@ export default function AdminAgenda() {
                       </span>
                     </div>
                     <div className="font-sans text-xs" style={{ color: C.cream3 }}>
-                      <IconUser size={11} className="inline mr-1" />{userData?.nome || 'Cliente #' + appt.usuario_id.slice(0, 6)}
+                      <IconUser size={11} className="inline mr-1" />{clientLabel}
                     </div>
                     <div className="font-sans text-sm font-bold tabular-nums mt-0.5" style={{ color: C.gold2 }}>
                       R$ {svc?.price ?? 0},00
@@ -211,8 +212,8 @@ export default function AdminAgenda() {
                       <IconFileText size={13} /> Detalhes
                     </div>
                     <div className="mb-4 rounded-xl p-3 font-sans text-sm space-y-1.5" style={{ background: C.s3, color: C.cream }}>
-                      <div className="flex items-center gap-2"><IconUser size={13} style={{ color: C.cream3 }} /> {userData?.nome || 'Desconhecido'}</div>
-                      {userData?.email && <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>{userData.email}</div>}
+                      <div className="flex items-center gap-2"><IconUser size={13} style={{ color: C.cream3 }} /> {clientLabel}</div>
+                      {(userData?.email || appt.cliente_email) && <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>{userData?.email || appt.cliente_email}</div>}
                       {userData?.telefone && <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>{userData.telefone}</div>}
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>
                         <IconClock size={11} /> Criado: {new Date(appt.data_criacao).toLocaleString('pt-BR')}

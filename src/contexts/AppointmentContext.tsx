@@ -5,6 +5,8 @@ import { useAuth } from './AuthContext';
 export type Appointment = {
   id: string;
   usuario_id: string;
+  cliente_email?: string;
+  cliente_nome?: string;
   servico_id: string;
   data_hora: string; // ISO
   status: 'pending' | 'confirmed' | 'canceled';
@@ -63,6 +65,8 @@ export const AppointmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const ap: Appointment = {
         id: Date.now().toString(36),
         usuario_id: user.id,
+        cliente_email: user.email,
+        cliente_nome: user.nome,
         servico_id: svcId,
         data_hora: iso,
         status: 'confirmed',

@@ -142,8 +142,11 @@ export default function AdminDashboard() {
             <div className="mb-2 flex items-center gap-1.5 font-sans text-[11px] font-semibold uppercase tracking-wider" style={{ color: C.cream3 }}>
               <IconFileText size={13} /> Detalhes
             </div>
-            <div className="mb-4 rounded-xl p-3 font-sans text-sm" style={{ background: C.s3, color: C.cream }}>
-              <div className="flex items-center gap-2 mb-1"><IconUser size={13} style={{ color: C.cream3 }} /> Cliente ID: {appt.usuario_id}</div>
+              <div className="mb-4 rounded-xl p-3 font-sans text-sm" style={{ background: C.s3, color: C.cream }}>
+              <div className="flex items-center gap-2 mb-1"><IconUser size={13} style={{ color: C.cream3 }} /> {appt.cliente_nome || appt.cliente_email || `Cliente #${appt.usuario_id.slice(0, 6)}`}</div>
+              {(appt.cliente_email || appt.usuario_id) && (
+                <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>{appt.cliente_email || appt.usuario_id}</div>
+              )}
               <div className="flex items-center gap-2"><IconClock size={13} style={{ color: C.cream3 }} /> Criado: {new Date(appt.data_criacao).toLocaleString('pt-BR')}</div>
             </div>
             {!isPast && (
