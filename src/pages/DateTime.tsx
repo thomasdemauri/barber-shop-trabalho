@@ -41,9 +41,20 @@ export default function DateTime() {
 
   // Resolve selected day object and availability
   const dayObj = selDate ? (calDays.find(d => d && d.d === selDate) as any) : null;
-  const dayAvailable = !!dayObj && dayObj.available;
   const selectedBarberId = booking.barber?.id ? Number(booking.barber.id) : null;
   const barberSchedule = getBarberSchedule(selectedBarberId);
+
+  function isDaySelectable(day: any) {
+    if (!day) return false;
+    // Never allow past dates.
+    if (day.isPast && !day.isToday) return false;
+    // If a barber is selected, availability follows that barber's configured weekdays.
+    if (barberSchedule) return barberSchedule.weekdays.includes(day.dow);
+    // Fallback to default calendar rule (shop/global behavior).
+    return day.available;
+  }
+
+  const dayAvailable = isDaySelectable(dayObj);
 
   // If selected day becomes unavailable, clear selected time
   useEffect(() => {
@@ -110,7 +121,7 @@ export default function DateTime() {
               {calDays.map((day, i) => {
                 if (!day) return <div key={i} />;
                 const isSel = selDate === day.d;
-                const avail = day.available;
+                const avail = isDaySelectable(day);
                 return (
                   <button
                     key={i}
@@ -128,7 +139,7 @@ export default function DateTime() {
                       background: isSel ? C.gold : day.isToday ? C.s3 : 'transparent',
                       color: isSel ? '#0b0907' : avail ? C.cream : C.cream3,
                       border: day.isToday && !isSel ? `1px solid ${C.b2}` : 'none',
-                      opacity: (day.isPast || day.isWeekend) && !day.isToday ? 0.3 : 1,
+                      opacity: !avail && !isSel && !day.isToday ? 0.3 : 1,
                       cursor: avail ? 'pointer' : 'default',
                       transition: 'all 0.2s',
                     }}
@@ -153,13 +164,6 @@ export default function DateTime() {
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
                 {TIME_SLOTS.map((t) => {
                   // if the day itself is unavailable, treat all slots as busy
-                  // Special override: force-disable 18/06 at 10:00
-                  const isOverrideBlocked = (() => {
-                    try {
-                      // month index: 5 = June
-                      return viewDate.getMonth() === 5 && dayObj && dayObj.d === 18 && t === '10:00';
-                    } catch { return false; }
-                  })();
                   const isTodaySelected = !!dayObj
                     && dayObj.d === now.getDate()
                     && viewDate.getMonth() === now.getMonth()
@@ -170,14 +174,14 @@ export default function DateTime() {
                   const isPastTimeToday = isTodaySelected && slotMinutes <= nowMinutes;
                   const barberTimes = getAvailableTimesForBarber(selectedBarberId, dayObj?.dow);
                   const barberClosed = !!barberSchedule && !barberTimes.includes(t);
-                  const isBusy = !dayAvailable || BUSY.has(t) || isOverrideBlocked || takenTimes.has(t) || isPastTimeToday || barberClosed;
+                  const isBusy = !dayAvailable || BUSY.has(t) || takenTimes.has(t) || isPastTimeToday || barberClosed;
                   const isSel = selTime === t;
                   return (
                     <button
                       key={t}
                       className={!isBusy ? 'tap hover:scale-105' : ''}
                       aria-disabled={isBusy}
-                      title={isOverrideBlocked ? 'Horário bloqueado (manualmente desativado)' : barberClosed ? 'Fora do horário do barbeiro' : undefined}
+                      title={barberClosed ? 'Fora do horário do barbeiro' : undefined}
                       onClick={() => !isBusy && setBooking((b: any) => ({ ...b, time: b.time === t ? null : t }))}
                       style={{
                         height: 48,
