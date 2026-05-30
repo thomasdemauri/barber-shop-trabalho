@@ -3,6 +3,7 @@ import { useBooking } from '../hooks/useBooking';
 import { BackBar, Btn } from '../ui';
 import { C, TIME_SLOTS, BUSY, generateCalendar, getMonthLabel, DOW_NAMES } from '../data/catalog';
 import { useAppointments } from '../hooks/useAppointments';
+import { getAvailableTimesForBarber, getBarberSchedule } from '../services/barberSchedule';
 import { useEffect, useState } from 'react';
 
 export default function DateTime() {
@@ -41,6 +42,8 @@ export default function DateTime() {
   // Resolve selected day object and availability
   const dayObj = selDate ? (calDays.find(d => d && d.d === selDate) as any) : null;
   const dayAvailable = !!dayObj && dayObj.available;
+  const selectedBarberId = booking.barber?.id ? Number(booking.barber.id) : null;
+  const barberSchedule = getBarberSchedule(selectedBarberId);
 
   // If selected day becomes unavailable, clear selected time
   useEffect(() => {
@@ -165,14 +168,16 @@ export default function DateTime() {
                   const slotMinutes = (hh * 60) + mm;
                   const nowMinutes = (now.getHours() * 60) + now.getMinutes();
                   const isPastTimeToday = isTodaySelected && slotMinutes <= nowMinutes;
-                  const isBusy = !dayAvailable || BUSY.has(t) || isOverrideBlocked || takenTimes.has(t) || isPastTimeToday;
+                  const barberTimes = getAvailableTimesForBarber(selectedBarberId, dayObj?.dow);
+                  const barberClosed = !!barberSchedule && !barberTimes.includes(t);
+                  const isBusy = !dayAvailable || BUSY.has(t) || isOverrideBlocked || takenTimes.has(t) || isPastTimeToday || barberClosed;
                   const isSel = selTime === t;
                   return (
                     <button
                       key={t}
                       className={!isBusy ? 'tap hover:scale-105' : ''}
                       aria-disabled={isBusy}
-                      title={isOverrideBlocked ? 'Horário bloqueado (manualmente desativado)' : undefined}
+                      title={isOverrideBlocked ? 'Horário bloqueado (manualmente desativado)' : barberClosed ? 'Fora do horário do barbeiro' : undefined}
                       onClick={() => !isBusy && setBooking((b: any) => ({ ...b, time: b.time === t ? null : t }))}
                       style={{
                         height: 48,
@@ -198,6 +203,11 @@ export default function DateTime() {
               {!dayAvailable && (
                 <div className="text-center font-sans text-sm text-cream3 mb-4">
                   Este dia está indisponível — não há horários disponíveis.
+                </div>
+              )}
+              {barberSchedule && (
+                <div className="text-center font-sans text-xs text-cream3 mb-4">
+                  {booking.barber?.name || 'Barbeiro selecionado'} atende em {barberSchedule.openTime} - {barberSchedule.closeTime}
                 </div>
               )}
               <div className="flex gap-6 font-sans text-xs sm:text-sm text-cream3 mt-6 justify-center sm:justify-start">
