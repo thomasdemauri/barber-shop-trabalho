@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../hooks/useAuth';
 import { Btn, Badge } from '../ui';
 import { IconPlus } from '../ui/Icons';
 import { C, SERVICES, TIME_SLOTS, generateCalendar, DOW_NAMES, MONTH_NAMES, type CalDay } from '../data/catalog';
@@ -257,11 +258,16 @@ export default function Appointments() {
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [editAppt, setEditAppt] = useState<Appointment | null>(null);
   const { appointments, cancel } = useAppointments();
+  const { user } = useAuth();
   const nav = useNavigate();
 
+  const myAppointments = user?.tipo === 'barbeiro'
+    ? appointments
+    : appointments.filter(a => a.usuario_id === user?.id);
+
   const now = new Date();
-  const upcoming = appointments.filter(a => a.status !== 'canceled' && new Date(a.data_hora) >= now);
-  const history  = appointments.filter(a => a.status === 'canceled'  || new Date(a.data_hora) < now);
+  const upcoming = myAppointments.filter(a => a.status !== 'canceled' && new Date(a.data_hora) >= now);
+  const history  = myAppointments.filter(a => a.status === 'canceled'  || new Date(a.data_hora) < now);
   const list = tab === 'upcoming' ? upcoming : history;
 
   const handleConfirmCancel = () => {

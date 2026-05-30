@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 export default function DateTime() {
   const { booking, setBooking } = useBooking();
   const nav = useNavigate();
+  const [now, setNow] = useState(() => new Date());
   const selDate = booking.date ? Number(booking.date) : undefined;
   const selTime = booking.time;
 
@@ -22,6 +23,12 @@ export default function DateTime() {
   useEffect(() => {
     setCalDays(generateCalendar(viewDate.getMonth(), viewDate.getFullYear(), new Date()));
   }, [viewDate]);
+
+  // Keep current time fresh so past slots on today are automatically disabled.
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   // Keep viewDate in sync when booking month/year changes (e.g., coming back from confirm)
   useEffect(() => {
@@ -150,7 +157,15 @@ export default function DateTime() {
                       return viewDate.getMonth() === 5 && dayObj && dayObj.d === 18 && t === '10:00';
                     } catch { return false; }
                   })();
-                  const isBusy = !dayAvailable || BUSY.has(t) || isOverrideBlocked || takenTimes.has(t);
+                  const isTodaySelected = !!dayObj
+                    && dayObj.d === now.getDate()
+                    && viewDate.getMonth() === now.getMonth()
+                    && viewDate.getFullYear() === now.getFullYear();
+                  const [hh, mm] = t.split(':').map(Number);
+                  const slotMinutes = (hh * 60) + mm;
+                  const nowMinutes = (now.getHours() * 60) + now.getMinutes();
+                  const isPastTimeToday = isTodaySelected && slotMinutes <= nowMinutes;
+                  const isBusy = !dayAvailable || BUSY.has(t) || isOverrideBlocked || takenTimes.has(t) || isPastTimeToday;
                   const isSel = selTime === t;
                   return (
                     <button

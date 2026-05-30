@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useAppointments } from '../hooks/useAppointments';
-import { SERVICES, C, getDayLabel } from '../data/catalog';
+import { SERVICES, C } from '../data/catalog';
 import { Btn, Badge } from '../ui';
 import { IconScissors, IconCalendar, IconUser, IconZap, IconAward, IconClock } from '../ui/Icons';
 
@@ -16,8 +16,12 @@ export default function Home() {
   const { appointments } = useAppointments();
   const nav = useNavigate();
 
+  const myAppointments = user?.tipo === 'barbeiro'
+    ? appointments
+    : appointments.filter(a => a.usuario_id === user?.id);
+
   const now = new Date();
-  const upcoming = appointments.filter(
+  const upcoming = myAppointments.filter(
     a => a.status !== 'canceled' && new Date(a.data_hora) >= now
   ).sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime());
 
