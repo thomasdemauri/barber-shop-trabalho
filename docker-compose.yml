@@ -17,7 +17,8 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000

@@ -3,12 +3,15 @@
 Fastify + TypeScript API for the barbershop frontend. Set `DATABASE_URL` and `JWT_SECRET` (see `.env.example`), then:
 
 ```bash
+cd backend
 npm install
 npx prisma generate
 npx prisma migrate deploy
 npm run prisma:seed
 npm run dev
 ```
+
+The backend Dockerfile uses the repository root as its build context. This matches the Northflank configuration: set the build context to `.` and the Dockerfile path to `backend/Dockerfile`.
 
 The API exposes `/api/auth`, `/api/catalog`, `/api/availability`, `/api/appointments`, `/api/profile`, and `/api/admin` routes. Appointment creation uses a serializable Prisma transaction, PostgreSQL advisory locking, and overlap checks. Errors use `{ error, message, details? }`; validation failures return 400, conflicts 409, and authentication/authorization failures 401/403.
 
