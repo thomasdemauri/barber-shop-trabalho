@@ -5,6 +5,8 @@ This repository is organized as a monorepo:
 - `frontend/` contains the React/Vite application.
 - `backend/` is reserved for the backend application.
 
+Both application Dockerfiles use the repository root as their build context. This matches Northflank: use `.` as the build context and `frontend/Dockerfile` or `backend/Dockerfile` as the Dockerfile path.
+
 ## Frontend development
 
 ```bash
