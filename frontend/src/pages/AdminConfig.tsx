@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { C, SERVICES, BARBERS, TIME_SLOTS } from '../data/catalog';
-import { IconSettings, IconScissors, IconUser, IconClock, IconSave, IconCheck } from '../ui/Icons';
+import { IconSettings, IconScissors, IconUser, IconClock, IconSave } from '../ui/Icons';
 import { Btn, Inp } from '../ui';
-import { DEFAULT_BARBER_SCHEDULE, ensureBarberSchedule, getBarberSchedule, resolveBarberIdByName, saveBarberSchedule, type BarberSchedule } from '../services/barberSchedule';
+import { ensureBarberSchedule, resolveBarberIdByName, saveBarberSchedule, type BarberSchedule } from '../services/barberSchedule';
 
 const CONFIG_KEY = 'barbershop_config';
 
@@ -58,13 +58,6 @@ export default function AdminConfig() {
     localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
     if (barberCfg) saveBarberSchedule(barberCfg);
     toast.success('Configurações salvas!');
-  }
-
-  function toggleDay(d: number) {
-    const next = cfg.weekdays.includes(d)
-      ? cfg.weekdays.filter(w => w !== d)
-      : [...cfg.weekdays, d].sort();
-    update('weekdays', next);
   }
 
   function updateCurrentBarber<K extends keyof BarberSchedule>(key: K, value: BarberSchedule[K]) {

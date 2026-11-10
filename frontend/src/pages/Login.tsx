@@ -17,8 +17,8 @@ export default function Login() {
 
   const handleLogin = () => {
     setLoading(true);
-    setTimeout(() => {
-      const ok = auth.login(email, pw, mode);
+    setTimeout(async () => {
+      const ok = await auth.login(email, pw, mode);
       setLoading(false);
       if (ok) nav(mode === 'admin' ? '/admin' : '/home');
       else toast.error('Credenciais inválidas');

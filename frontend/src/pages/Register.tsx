@@ -65,17 +65,17 @@ export default function Register() {
     setTouched({ name: true, email: true, pw: true, cpw: true });
     if (!canSubmit) { toast.error('Corrija os erros antes de continuar.'); return; }
 
-    const users: any[] = JSON.parse(localStorage.getItem('barbershop_users') || '[]');
-    if (users.find((u: any) => u.email === email)) {
-      toast.error('Este e-mail já está cadastrado.');
-      return;
-    }
-
     setLoading(true);
-    setTimeout(() => {
-      auth.register({ nome: name.trim(), email, telefone: phone, senha: pw });
-      toast.success('Cadastro realizado com sucesso!');
-      nav('/home');
+    setTimeout(async () => {
+      try {
+        await auth.register({ nome: name.trim(), email, telefone: phone, senha: pw });
+        toast.success('Cadastro realizado com sucesso!');
+        nav('/home');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Não foi possível realizar o cadastro.');
+      } finally {
+        setLoading(false);
+      }
     }, 800);
   };
 

@@ -1,13 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAppointments } from '../hooks/useAppointments';
 import { C, SERVICES } from '../data/catalog';
-import { IconSearch, IconUser, IconMail, IconClock, IconScissors, IconX, IconChevronRight } from '../ui/Icons';
+import { IconSearch, IconUser, IconMail, IconClock, IconScissors, IconX } from '../ui/Icons';
+import { api } from '../services/api';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem('barbershop_users') || '[]'); } catch { return []; }
-}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -18,22 +15,22 @@ export default function AdminClientes() {
   const { appointments } = useAppointments();
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const allUsers = useMemo(() => getUsers(), []);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  useEffect(() => { void api<any[]>('/admin/users').then(setAllUsers).catch(() => setAllUsers([])); }, []);
 
   const clients = useMemo(() => {
     return allUsers
-      .filter((u: any) => u.tipo !== 'barbeiro')
-      .sort((a: any, b: any) => (a.nome || '').localeCompare(b.nome || ''));
+      .filter((u: any) => u.role === 'CLIENT')
+      .sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
   }, [allUsers]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return clients;
     const q = search.toLowerCase();
     return clients.filter((u: any) =>
-      (u.nome || '').toLowerCase().includes(q) ||
+      (u.name || '').toLowerCase().includes(q) ||
       (u.email || '').toLowerCase().includes(q) ||
-      (u.telefone || '').includes(q)
+      (u.phone || '').includes(q)
     );
   }, [clients, search]);
 
@@ -100,7 +97,7 @@ export default function AdminClientes() {
           filtered.map((client: any) => {
             const isOpen = expandedId === client.id;
             const stats = getStats(client.id);
-            const initials = (client.nome || '??')
+            const initials = (client.name || '??')
               .split(' ')
               .map((s: string) => s[0])
               .slice(0, 2)
@@ -121,15 +118,15 @@ export default function AdminClientes() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-sans text-sm font-bold text-cream truncate">{client.nome || 'Sem nome'}</div>
+                    <div className="font-sans text-sm font-bold text-cream truncate">{client.name || 'Sem nome'}</div>
                     <div className="flex items-center gap-3 mt-0.5">
                       {client.email && (
                         <span className="font-sans text-xs" style={{ color: C.cream3 }}>
                           <IconMail size={10} className="inline mr-1" />{client.email}
                         </span>
                       )}
-                      {client.telefone && (
-                        <span className="font-sans text-xs" style={{ color: C.cream3 }}>{client.telefone}</span>
+                      {client.phone && (
+                        <span className="font-sans text-xs" style={{ color: C.cream3 }}>{client.phone}</span>
                       )}
                     </div>
                   </div>
@@ -160,10 +157,10 @@ export default function AdminClientes() {
                         <IconMail size={13} style={{ color: C.cream3 }} /> {client.email || 'Sem email'}
                       </div>
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>
-                        Telefone: {client.telefone || 'Não informado'}
+                        Telefone: {client.phone || 'Não informado'}
                       </div>
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>
-                        Cliente desde: {client.data_criacao ? formatDate(client.data_criacao) : 'N/A'}
+                        Cliente desde: {client.createdAt ? formatDate(client.createdAt) : 'N/A'}
                       </div>
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>
                         <IconScissors size={11} /> {stats.total} agendamento{stats.total !== 1 ? 's' : ''} · {stats.completed} concluído{stats.completed !== 1 ? 's' : ''}

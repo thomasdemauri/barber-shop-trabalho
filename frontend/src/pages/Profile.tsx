@@ -8,6 +8,7 @@ import {
   IconHelpCircle, IconLogOut, IconChevronRight,
 } from '../ui/Icons';
 import { C } from '../data/catalog';
+import { api } from '../services/api';
 
 // ─── tipos ───────────────────────────────────────────────────────────────────
 
@@ -108,32 +109,18 @@ function ModalDados({ onClose }: { onClose: () => void }) {
   const [senhaNova, setSenhaNova] = useState('');
   const [senhaConf, setSenhaConf] = useState('');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!nome.trim()) { toast.error('Nome não pode ser vazio.'); return; }
     if (senhaNova && senhaNova !== senhaConf) { toast.error('As senhas não coincidem.'); return; }
     if (senhaNova && senhaNova.length < 6) { toast.error('Senha deve ter ao menos 6 caracteres.'); return; }
 
-    // Atualiza usuário no localStorage
-    const users: any[] = JSON.parse(localStorage.getItem('barbershop_users') || '[]');
-    const idx = users.findIndex((u: any) => u.id === user?.id);
-    if (idx !== -1) {
-      if (senhaNova) {
-        if (users[idx].senha !== senhaAtual) { toast.error('Senha atual incorreta.'); return; }
-        users[idx].senha = senhaNova;
-      }
-      users[idx].nome = nome;
-      users[idx].email = email;
-      users[idx].telefone = telefone;
-      localStorage.setItem('barbershop_users', JSON.stringify(users));
-      // Atualiza sessão
-      const session = JSON.parse(localStorage.getItem('barbershop_session') || '{}');
-      if (session.value) {
-        session.value = { ...session.value, nome, email, telefone };
-        localStorage.setItem('barbershop_session', JSON.stringify(session));
-      }
+    try {
+      await api('/profile', { method: 'PATCH', body: JSON.stringify({ name: nome, email, phone: telefone, ...(senhaNova ? { currentPassword: senhaAtual, password: senhaNova } : {}) }) });
+      toast.success('Dados atualizados com sucesso!');
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar os dados.');
     }
-    toast.success('Dados atualizados com sucesso!');
-    onClose();
   };
 
   return (
@@ -178,10 +165,15 @@ function ModalCorte({ onClose }: { onClose: () => void }) {
   const [barba, setBarba] = useState<string>(saved.barba || '');
   const [obs, setObs] = useState<string>(saved.obs || '');
 
-  const handleSave = () => {
-    localStorage.setItem(PREF_KEY, JSON.stringify({ estilo, barba, obs }));
-    toast.success('Preferências salvas!');
-    onClose();
+  const handleSave = async () => {
+    try {
+      await api('/profile/preferences', { method: 'PATCH', body: JSON.stringify({ haircutPreferences: { estilo, barba, obs } }) });
+      localStorage.setItem(PREF_KEY, JSON.stringify({ estilo, barba, obs }));
+      toast.success('Preferências salvas!');
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar as preferências.');
+    }
   };
 
   return (
@@ -265,10 +257,15 @@ function ModalNotif({ onClose }: { onClose: () => void }) {
   const [cancelamento, setCancelamento] = useState(saved.cancelamento ?? true);
   const [novidades, setNovidades] = useState(saved.novidades ?? false);
 
-  const handleSave = () => {
-    localStorage.setItem(NOTIF_KEY, JSON.stringify({ confirmacao, lembrete, promocoes, cancelamento, novidades }));
-    toast.success('Preferências de notificação salvas!');
-    onClose();
+  const handleSave = async () => {
+    try {
+      await api('/profile/preferences', { method: 'PATCH', body: JSON.stringify({ notificationPreferences: { confirmacao, lembrete, promocoes, cancelamento, novidades } }) });
+      localStorage.setItem(NOTIF_KEY, JSON.stringify({ confirmacao, lembrete, promocoes, cancelamento, novidades }));
+      toast.success('Preferências de notificação salvas!');
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar as notificações.');
+    }
   };
 
   return (
@@ -306,10 +303,15 @@ function ModalPagamento({ onClose }: { onClose: () => void }) {
   const [preferido, setPreferido] = useState<string>(saved.preferido || '');
   const [pixChave, setPixChave] = useState<string>(saved.pixChave || '');
 
-  const handleSave = () => {
-    localStorage.setItem(PAG_KEY, JSON.stringify({ preferido, pixChave }));
-    toast.success('Forma de pagamento salva!');
-    onClose();
+  const handleSave = async () => {
+    try {
+      await api('/profile/preferences', { method: 'PATCH', body: JSON.stringify({ paymentPreferences: { preferido, pixChave } }) });
+      localStorage.setItem(PAG_KEY, JSON.stringify({ preferido, pixChave }));
+      toast.success('Forma de pagamento salva!');
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar o pagamento.');
+    }
   };
 
   return (

@@ -6,6 +6,7 @@ import { useAppointments } from '../hooks/useAppointments';
 import { Btn } from '../ui';
 import { C, SERVICES, DOW_NAMES } from '../data/catalog';
 import { IconScissors, IconFileText, IconCheck, IconClock, IconUser } from '../ui/Icons';
+import { api } from '../services/api';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -32,7 +33,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
-  const { appointments, cancel, edit } = useAppointments();
+  const { appointments, cancel } = useAppointments();
   const nav = useNavigate();
   const [openId, setOpenId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -67,18 +68,11 @@ export default function AdminDashboard() {
     { label: 'Pendentes',    n: String(pending),         sub: 'aguardando', highlight: pending > 0 },
   ];
 
-  const handleConfirm = async (id: string, svcId: string, iso: string) => {
+  const handleConfirm = async (id: string) => {
     setLoadingId(id);
-    const res = await edit(id, svcId, iso);
-    // Força status confirmed (edit coloca pending, vamos sobrescrever via cancel+create não é ideal,
-    // então vamos ler e escrever direto)
-    const key = 'barbershop_appointments';
-    const all = JSON.parse(localStorage.getItem(key) || '[]');
-    const next = all.map((a: any) => a.id === id ? { ...a, status: 'confirmed' } : a);
-    localStorage.setItem(key, JSON.stringify(next));
-    window.dispatchEvent(new StorageEvent('storage', { key }));
+    await api(`/admin/appointments/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'CONFIRMED' }) });
     setLoadingId(null);
-    if (res.ok || true) toast.success('Agendamento confirmado!');
+    toast.success('Agendamento confirmado!');
     setOpenId(null);
   };
 
@@ -163,7 +157,7 @@ export default function AdminDashboard() {
                 {appt.status === 'pending' && (
                   <Btn style={{ height: 42, fontSize: 13, flex: 1 }}
                     loading={loadingId === appt.id}
-                    onClick={() => handleConfirm(appt.id, appt.servico_id, appt.data_hora)}>
+                    onClick={() => handleConfirm(appt.id)}>
                     <span className="flex items-center justify-center gap-1.5">
                       <IconCheck size={13} /> Confirmar
                     </span>

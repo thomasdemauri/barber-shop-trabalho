@@ -4,6 +4,7 @@ import { useAppointments } from '../hooks/useAppointments';
 import { Btn } from '../ui';
 import { C, SERVICES, DOW_NAMES } from '../data/catalog';
 import { IconChevronLeft, IconChevronRight, IconClock, IconCheck, IconUser, IconFileText, IconCalendar, IconX, IconScissors } from '../ui/Icons';
+import { api } from '../services/api';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -76,11 +77,7 @@ export default function AdminAgenda() {
 
   const handleConfirm = async (id: string) => {
     setLoadingId(id);
-    const key = 'barbershop_appointments';
-    const all = JSON.parse(localStorage.getItem(key) || '[]');
-    const next = all.map((a: any) => a.id === id ? { ...a, status: 'confirmed' } : a);
-    localStorage.setItem(key, JSON.stringify(next));
-    window.dispatchEvent(new StorageEvent('storage', { key }));
+    await api(`/admin/appointments/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'CONFIRMED' }) });
     setLoadingId(null);
     toast.success('Agendamento confirmado!');
     setOpenId(null);
