@@ -7,6 +7,8 @@ This repository is organized as a monorepo:
 
 Both application Dockerfiles use the repository root as their build context. This matches Northflank: use `.` as the build context and `frontend/Dockerfile` or `backend/Dockerfile` as the Dockerfile path.
 
+For the Northflank frontend service, set the build variable `VITE_PROD=true` and runtime variable `BACKEND_INTERNAL_URL=http://barber-shop:3000`. The browser then calls `/api`, while Nginx proxies it privately to the backend service.
+
 ## Frontend development
 
 ```bash
