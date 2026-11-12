@@ -14,5 +14,6 @@ RUN npm run build
 FROM nginx:1.27-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY frontend/nginx.conf.template /etc/nginx/templates/default.conf.template
-ENV BACKEND_INTERNAL_URL=http://backend:3000
+ARG BACKEND_INTERNAL_URL=http://backend:3000
+ENV BACKEND_INTERNAL_URL=$BACKEND_INTERNAL_URL
 EXPOSE 80

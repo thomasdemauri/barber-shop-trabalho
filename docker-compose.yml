@@ -38,6 +38,7 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
         VITE_PROD: ${VITE_PROD:-false}
+        BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:3000}
     environment:
       BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:3000}
     ports:
