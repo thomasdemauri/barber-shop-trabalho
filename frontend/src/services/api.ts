@@ -1,5 +1,4 @@
-const isProduction = import.meta.env.VITE_PROD === 'true';
-const API_URL = isProduction ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:3000/api');
+const API_URL = '/api';
 
 type ApiError = { message?: string; error?: string };
 
