@@ -1,17 +1,8 @@
-  import { createContext, useContext, useState, type ReactNode } from 'react';
+  import { useSidebar } from './sidebar';
   import {
     IconHome, IconScissors, IconCalendar, IconUser,
     IconChevronLeft, IconChevronRight, IconLogOut, IconSettings,
   } from './Icons';
-
-  type SidebarCtx = { open: boolean; toggle: () => void };
-  const Ctx = createContext<SidebarCtx>({ open: true, toggle: () => {} });
-  export const useSidebar = () => useContext(Ctx);
-
-  export function SidebarProvider({ children }: { children: ReactNode }) {
-    const [open, setOpen] = useState(true);
-    return <Ctx.Provider value={{ open, toggle: () => setOpen(p => !p) }}>{children}</Ctx.Provider>;
-  }
 
   type NavItem = {
     id: string;
@@ -39,11 +30,13 @@
     current,
     onNav,
     role = 'cliente',
+    shopName,
     onLogout,
   }: {
     current: string;
     onNav: (path: string) => void;
     role?: 'cliente' | 'barbeiro';
+    shopName: string;
     onLogout?: () => void;
   }) {
     const { open, toggle } = useSidebar();
@@ -118,7 +111,7 @@
             {open && (
               <div className="flex flex-col min-w-0 animate-fade-up" style={{ animationDuration: '0.25s' }}>
                 <span className="font-serif text-base font-bold text-cream truncate leading-tight">
-                  Navalha de Ouro
+                  {shopName}
                 </span>
                 <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: 'var(--color-gold2)' }}>
                   {role === 'barbeiro' ? 'Painel Admin' : 'Premium'}

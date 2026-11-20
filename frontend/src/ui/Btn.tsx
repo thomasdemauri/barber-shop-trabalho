@@ -56,6 +56,8 @@ export function Btn({
   return (
     <button
       className={`tap flex w-full items-center justify-center ${className}`}
+      disabled={disabled}
+      aria-busy={loading || undefined}
       onClick={disabled || loading ? undefined : onClick}
       style={{ ...baseStyle, background: bg, color, border }}
     >

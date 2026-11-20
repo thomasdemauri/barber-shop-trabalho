@@ -1,34 +1,34 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { errorMessage } from '../api/client';
+import { authApi } from '../api/endpoints';
+import { AuthBrandPanel } from '../components/AuthBrandPanel';
 import { BackBar, Inp, Btn } from '../ui';
-import { C } from '../data/catalog';
-import { IconScissors, IconCheck } from '../ui/Icons';
+import { C } from '../theme';
+import { IconCheck } from '../ui/Icons';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const nav = useNavigate();
+
+  const requestLink = async () => {
+    setSending(true);
+    try {
+      await authApi.forgotPassword(email);
+      setSent(true);
+    } catch (error) {
+      toast.error(errorMessage(error, 'Não foi possível enviar o link.'));
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-bg">
-      {/* Brand Left Split (Desktop) */}
-      <div className="hidden lg:flex w-[48%] flex-col justify-center items-center border-r border-b1 p-16 relative overflow-hidden" style={{ background: C.s1 }}>
-        <div className="absolute w-[500px] h-[500px] rounded-full opacity-[0.07]" style={{ background: `radial-gradient(circle, ${C.gold} 0%, transparent 70%)` }} />
-
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="mb-8 flex h-28 w-28 items-center justify-center rounded-2xl" style={{ background: C.s3, border: `1px solid ${C.b2}` }}>
-            <IconScissors size={40} className="text-gold" />
-          </div>
-          <h1 className="font-serif text-5xl font-bold text-cream mb-3 text-center leading-tight">
-            Navalha de Ouro
-          </h1>
-          <div className="flex items-center gap-3 mt-2">
-            <div className="w-8 h-px bg-gold/40" />
-            <p className="font-sans text-xs text-cream3 uppercase tracking-[0.3em]">Sempre Portas Abertas</p>
-            <div className="w-8 h-px bg-gold/40" />
-          </div>
-        </div>
-      </div>
+      <AuthBrandPanel />
 
       {/* Right Form Panel */}
       <div className="flex flex-1 flex-col justify-center items-center px-6 sm:px-12 lg:px-16 xl:px-24 py-10 bg-bg overflow-y-auto">
@@ -51,7 +51,7 @@ export default function ForgotPassword() {
               </div>
               <h3 className="mb-3 font-serif text-2xl font-bold text-cream text-center">Link Enviado</h3>
               <p className="mb-10 font-sans text-sm text-cream3 text-center leading-relaxed px-4">
-                Enviamos as instruções de recuperação para o seu e-mail. Verifique a caixa de spam.
+                Se houver uma conta com este e-mail, enviaremos as instruções de recuperação. Verifique também a caixa de spam.
               </p>
               <Btn onClick={() => nav('/login')} variant="secondary">Voltar ao Login</Btn>
             </div>
@@ -67,7 +67,7 @@ export default function ForgotPassword() {
               <Inp label="E-mail" value={email} onChange={setEmail} type="email" placeholder="nome@email.com" autoFocus />
               
               <div className="mt-10">
-                <Btn onClick={() => setSent(true)} disabled={!email}>Enviar Link</Btn>
+                <Btn onClick={requestLink} loading={sending} disabled={!email}>Enviar Link</Btn>
               </div>
             </div>
           )}

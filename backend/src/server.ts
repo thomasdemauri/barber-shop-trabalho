@@ -1,16 +1,30 @@
 import 'dotenv/config';
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import jwt from '@fastify/jwt';
-import sensible from '@fastify/sensible';
-import auth from './plugins/auth.js';
-import { registerRoutes, registerErrorHandler } from './routes/index.js';
-import { prisma } from './lib/prisma.js';
-const app=Fastify({logger:true});
-await app.register(cors,{origin:process.env.CORS_ORIGIN?.split(',')??true,credentials:true});
-await app.register(sensible);
-await app.register(jwt,{secret:process.env.JWT_SECRET??'development-only-secret-change-me',sign:{expiresIn:'8h'}});
-await app.register(auth); registerErrorHandler(app); await app.register(registerRoutes, { prefix: '/api' });
-app.get('/health',async()=>({status:'ok',timestamp:new Date().toISOString()}));
-const port=Number(process.env.PORT??3333); await app.listen({port,host:'0.0.0.0'});
-const shutdown=async()=>{await app.close();await prisma.$disconnect();process.exit(0)}; process.on('SIGINT',shutdown);process.on('SIGTERM',shutdown);
+import { buildApp } from './app.js';
+import { loadConfig } from './config.js';
+import { createUseCases } from './container.js';
+import { createPrismaInfrastructure } from './infrastructure.js';
+import { prisma } from './shared/infrastructure/prisma.js';
+import { RabbitMqNotificationPublisher } from './modules/notifications/infrastructure/rabbitmq-notification-publisher.js';
+import { ResilientNotificationPublisher } from './modules/notifications/infrastructure/resilient-notification-publisher.js';
+
+const config = loadConfig();
+let logError: (error: unknown, event: unknown) => void = error => console.error(error);
+const notifications = new ResilientNotificationPublisher(
+  new RabbitMqNotificationPublisher(config.rabbitMqUrl),
+  (error, event) => logError(error, event),
+);
+
+const useCases = createUseCases(createPrismaInfrastructure(prisma, notifications), config);
+const app = await buildApp({ useCases, jwtSecret: config.jwtSecret, corsOrigin: config.corsOrigin, logger: true });
+logError = (error, event) => app.log.error({ err: error, event }, 'failed to publish notification');
+
+await app.listen({ port: config.port, host: '0.0.0.0' });
+
+const shutdown = async () => {
+  await app.close();
+  await notifications.close();
+  await prisma.$disconnect();
+  process.exit(0);
+};
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

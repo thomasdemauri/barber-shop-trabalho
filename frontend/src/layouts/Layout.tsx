@@ -1,5 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import { useShop } from '../hooks/useShop';
 import { BottomNav } from '../ui';
 import { useEffect, useRef, useState } from 'react';
 
@@ -7,6 +8,7 @@ export default function Layout() {
   const location = useLocation();
   const nav = useNavigate();
   const { user, logout } = useAuth();
+  const { shopName } = useShop();
   const [visible, setVisible] = useState(true);
   const prevPath = useRef(location.pathname);
 
@@ -27,6 +29,7 @@ export default function Layout() {
         current={current}
         onNav={(path) => nav(`/${path}`)}
         role={role}
+        shopName={shopName}
         onLogout={() => { logout(); nav('/login'); }}
       />
       <main

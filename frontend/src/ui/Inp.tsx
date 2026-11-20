@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { C } from '../data/catalog';
+import { C } from '../theme';
 
 export function Inp({
   label,

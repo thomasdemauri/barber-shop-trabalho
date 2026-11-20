@@ -15,6 +15,22 @@ services:
       timeout: 5s
       retries: 10
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-barbershop}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-barbershop}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: .
@@ -25,11 +41,42 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-barbershop}:${POSTGRES_PASSWORD:-barbershop}@postgres:5432/${POSTGRES_DB:-barbershop}
       JWT_SECRET: ${JWT_SECRET:-change-this-development-secret}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-barbershop}:${RABBITMQ_PASSWORD:-barbershop}@rabbitmq:5672
+      SHOP_TIMEZONE: ${SHOP_TIMEZONE:-America/Sao_Paulo}
+      SLOT_INTERVAL_MINUTES: ${SLOT_INTERVAL_MINUTES:-30}
+      # Brazilian demo clients and appointments (see backend/prisma/DEMO_USERS.md). Never enable in production.
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  notification-worker:
+    # Same image as the API, different entrypoint: consumes RabbitMQ and e-mails the people involved.
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["node", "dist/src/worker.js"]
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-barbershop}:${RABBITMQ_PASSWORD:-barbershop}@rabbitmq:5672
+      # memory = simulated (logged, not sent); brevo = real delivery through the Brevo API (needs BREVO_API_KEY).
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-memory}
+      EMAIL_FROM: ${EMAIL_FROM:-Navalha de Ouro <nao-responda@barbearia.test>}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      SHOP_NAME: ${SHOP_NAME:-Navalha de Ouro}
+      SHOP_TIMEZONE: ${SHOP_TIMEZONE:-America/Sao_Paulo}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      NOTIFICATION_MAX_ATTEMPTS: ${NOTIFICATION_MAX_ATTEMPTS:-5}
+      NOTIFICATION_RETRY_DELAY_MS: ${NOTIFICATION_RETRY_DELAY_MS:-2000}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    # Exits on a lost broker connection; the restart policy brings it back.
+    restart: unless-stopped
 
   frontend:
     build:
@@ -49,3 +96,4 @@ services:
 
 volumes:
   postgres_data:
+  rabbitmq_data:

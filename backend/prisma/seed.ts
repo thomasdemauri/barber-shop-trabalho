@@ -1,7 +1,121 @@
 import { PrismaClient, Role } from '@prisma/client';
 import argon2 from 'argon2';
-import { DEFAULT_SERVICES } from '../src/domain/catalog.js';
-const db=new PrismaClient();
-const barbers: string[][]=[['João Mestre','joao.mestre@barbershop.com','11988888888','12 anos','Cortes clássicos e degradê'],['Pedro Silva','pedro@barbershop.com','11977777777','7 anos','Barba e tratamentos capilares'],['Carlos Barbosa','carlos@barbershop.com','11966666666','10 anos','Cortes modernos e coloração']];
-async function main(){for(const service of DEFAULT_SERVICES)await db.service.upsert({where:{id:service.id},create:service,update:{name:service.name,description:service.description,price:service.price,durationMinutes:service.durationMinutes}}); const users=[['Admin Barbeiro','admin@example.com','11900000000',Role.ADMIN,'1234'],['João Silva','joao@test.com','11999999999',Role.CLIENT,'123456']]; for(const [name,email,phone,role,password] of users)await db.user.upsert({where:{email},create:{name,email,phone,passwordHash:await argon2.hash(password),role:role as Role,preferences:{create:{}}},update:{}}); for(const [name,email,phone,experience,bio] of barbers){const u=await db.user.upsert({where:{email},create:{name,email,phone,passwordHash:await argon2.hash('123456'),role:Role.BARBER},update:{}});const b=await db.barber.upsert({where:{userId:u.id},create:{userId:u.id,experience,bio},update:{experience,bio}});for(const weekday of [1,2,3,4,5])await db.schedule.upsert({where:{barberId_weekday:{barberId:b.id,weekday}},create:{barberId:b.id,weekday,openTime:'08:00',closeTime:'18:00'},update:{}})}}
-main().finally(()=>db.$disconnect());
+import { ShopTimeZone } from '../src/modules/scheduling/domain/shop-time-zone.js';
+import { buildDemoAppointments, DEMO_CLIENTS, mulberry32 } from './demo-data.js';
+
+const db = new PrismaClient();
+
+const SERVICES = [
+  { id: 'corte-C', name: 'Corte Clássico', description: 'Tesoura ou máquina', icon: 'C', category: 'corte', price: 40, durationMinutes: 40 },
+  { id: 'combo-CB', name: 'Corte + Barba', description: 'Combo premium', icon: 'CB', category: 'combo', price: 65, durationMinutes: 70 },
+  { id: 'barba-B', name: 'Barba Completa', description: 'Navalha profissional', icon: 'B', category: 'barba', price: 35, durationMinutes: 30 },
+  { id: 'trat-H', name: 'Hidratação Capilar', description: 'Tratamento profundo', icon: 'H', category: 'trat', price: 30, durationMinutes: 20 },
+  { id: 'trat-D', name: 'Design de Sobrancelha', description: 'Modelagem precisa', icon: 'D', category: 'trat', price: 20, durationMinutes: 15 },
+  { id: 'trat-Co', name: 'Coloração', description: 'Platinado, luzes, ombré', icon: 'Co', category: 'trat', price: 120, durationMinutes: 90 },
+];
+
+const USERS = [
+  { name: 'Admin Barbeiro', email: 'admin@example.com', phone: '11900000000', role: Role.ADMIN, password: '1234' },
+  { name: 'João Silva', email: 'joao@test.com', phone: '11999999999', role: Role.CLIENT, password: '123456' },
+];
+
+const BARBERS = [
+  { name: 'João Mestre', email: 'joao.mestre@barbershop.com', phone: '11988888888', experience: '12 anos', bio: 'Cortes clássicos e degradê' },
+  { name: 'Pedro Silva', email: 'pedro@barbershop.com', phone: '11977777777', experience: '7 anos', bio: 'Barba e tratamentos capilares' },
+  { name: 'Carlos Barbosa', email: 'carlos@barbershop.com', phone: '11966666666', experience: '10 anos', bio: 'Cortes modernos e coloração' },
+];
+
+const WEEKDAYS = [1, 2, 3, 4, 5];
+const BARBER_PASSWORD = '123456';
+
+/** Seed runs on every container start, so existing rows are left alone to keep admin edits. */
+async function seedServices() {
+  for (const service of SERVICES) {
+    await db.service.upsert({ where: { id: service.id }, create: service, update: {} });
+  }
+}
+
+async function seedUsers() {
+  for (const { password, ...user } of USERS) {
+    await db.user.upsert({
+      where: { email: user.email },
+      create: { ...user, passwordHash: await argon2.hash(password), preferences: { create: {} } },
+      update: {},
+    });
+  }
+}
+
+async function seedBarbers() {
+  for (const { experience, bio, ...user } of BARBERS) {
+    const account = await db.user.upsert({
+      where: { email: user.email },
+      create: { ...user, role: Role.BARBER, passwordHash: await argon2.hash(BARBER_PASSWORD) },
+      update: {},
+    });
+    const barber = await db.barber.upsert({
+      where: { userId: account.id },
+      create: { userId: account.id, experience, bio },
+      update: { experience, bio },
+    });
+    for (const weekday of WEEKDAYS) {
+      await db.schedule.upsert({
+        where: { barberId_weekday: { barberId: barber.id, weekday } },
+        create: { barberId: barber.id, weekday, openTime: '08:00', closeTime: '18:00' },
+        update: {},
+      });
+    }
+  }
+}
+
+async function seedShopSettings() {
+  await db.shopSettings.upsert({ where: { id: 1 }, create: { id: 1, name: 'Navalha de Ouro' }, update: {} });
+}
+
+const DEMO_RANDOM_SEED = 20261120;
+
+/** Brazilian demo clients plus their agenda (Nov 2026 – Jan 2027). Safe to rerun: existing rows are left untouched. */
+async function seedDemoData() {
+  const clientIds: string[] = [];
+  for (const { password, ...client } of DEMO_CLIENTS) {
+    const user = await db.user.upsert({
+      where: { email: client.email },
+      create: { ...client, role: Role.CLIENT, passwordHash: await argon2.hash(password), preferences: { create: {} } },
+      update: {},
+    });
+    clientIds.push(user.id);
+  }
+
+  // Generated once: a changed catalog would shift the random sequence and create overlapping bookings.
+  if (await db.appointment.count({ where: { id: { startsWith: 'demo-' } } }) > 0) {
+    console.log('Demo data: appointments already seeded, skipping.');
+    return;
+  }
+
+  const barbers = await db.barber.findMany({ include: { user: true } });
+  const services = await db.service.findMany({ where: { active: true }, orderBy: { id: 'asc' } });
+  const appointments = buildDemoAppointments({
+    clientIds,
+    barberIds: barbers.sort((a, b) => a.user.name.localeCompare(b.user.name, 'pt-BR')).map(barber => barber.id),
+    services,
+    timeZone: new ShopTimeZone(process.env.SHOP_TIMEZONE ?? 'America/Sao_Paulo'),
+    random: mulberry32(DEMO_RANDOM_SEED),
+  });
+
+  await db.appointment.createMany({
+    data: appointments.map(appointment => ({
+      ...appointment,
+      createdAt: new Date(appointment.startsAt.getTime() - 2 * 24 * 60 * 60_000),
+    })),
+  });
+  console.log(`Demo data: ${DEMO_CLIENTS.length} clients, ${appointments.length} appointments.`);
+}
+
+async function main() {
+  await seedServices();
+  await seedUsers();
+  await seedBarbers();
+  await seedShopSettings();
+  if (process.env.SEED_DEMO_DATA === 'true') await seedDemoData();
+}
+
+main().finally(() => db.$disconnect());

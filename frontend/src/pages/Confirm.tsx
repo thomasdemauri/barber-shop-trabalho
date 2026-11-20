@@ -1,57 +1,48 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useBooking } from '../hooks/useBooking';
+import { errorMessage } from '../api/client';
 import { useAppointments } from '../hooks/useAppointments';
+import { useBooking } from '../hooks/useBooking';
+import { longDateLabel } from '../lib/dates';
+import { formatDuration, formatPrice } from '../lib/format';
+import { C } from '../theme';
 import { BackBar, Btn } from '../ui';
-import { C, SVC_DUR, DOW_NAMES, MONTH_NAMES } from '../data/catalog';
 import { IconCreditCard } from '../ui/Icons';
 
 export default function Confirm() {
   const { booking, clear } = useBooking();
-  const { create } = useAppointments();
+  const { book } = useAppointments();
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
 
-  const { service, barber, date, time } = booking;
-  const dur = SVC_DUR[service?.id as number] || '40 min';
-
-  const monthName = MONTH_NAMES[(booking.month ?? 4)];
-  const dowLabel = (() => {
-    const y = booking.year ?? 2026;
-    const m = booking.month ?? 4;
-    const d = Number(date);
-    const dt = new Date(y, m, d);
-    return DOW_NAMES[dt.getDay()];
-  })();
+  // RequireBookingComplete guarantees service, dateKey and slot.
+  const service = booking.service!;
+  const slot = booking.slot!;
 
   const rows = [
-    ['Serviço', service?.name],
-    ['Barbeiro', barber?.name || 'Primeiro disponível'],
-    ['Data', `${dowLabel}, ${date} de ${monthName}`],
-    ['Horário', `${time} · ${dur}`],
+    ['Serviço', service.name],
+    ['Barbeiro', booking.barber?.name ?? 'Primeiro disponível'],
+    ['Data', longDateLabel(booking.dateKey!)],
+    ['Horário', `${slot.time} · ${formatDuration(service.durationMinutes)}`],
   ];
 
   const handleConfirm = async () => {
-    if (!service || !date || !time) return;
     setLoading(true);
-    const y = booking.year ?? 2026;
-    const m = (booking.month ?? 4) + 1; // month 1-12
-    const iso = `${y}-${String(m).padStart(2, '0')}-${String(date).padStart(2, '0')}T${time}:00`;
-    const res = await create(String(service.id), iso, barber?.name || 'Primeiro disponível');
-    setLoading(false);
-    if (res.ok) {
+    try {
+      const appointment = await book({ serviceId: service.id, startsAt: slot.startsAt, barberId: booking.barber?.id });
+      nav('/success', { state: { appointment } });
       clear();
-      nav('/success');
-    } else {
-      toast.error('Falha ao agendar. Tente novamente.');
+    } catch (error) {
+      toast.error(errorMessage(error, 'Falha ao agendar. Tente novamente.'));
+      setLoading(false);
     }
   };
 
   return (
     <>
       <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 flex flex-col min-h-screen pb-24">
-        <BackBar title="Confirmar Agendamento" onBack={() => nav(-1 as any)} />
+        <BackBar title="Confirmar Agendamento" onBack={() => nav(-1)} />
 
         <div className="mt-8 flex flex-col items-center flex-1 w-full max-w-lg mx-auto">
           {/* Summary table */}
@@ -77,7 +68,7 @@ export default function Confirm() {
               style={{ background: C.goldBg, borderTop: `1px solid ${C.gold}28` }}
             >
               <span className="font-sans text-base sm:text-lg font-bold text-cream">Total</span>
-              <span className="font-serif text-3xl sm:text-4xl font-bold text-gold2">R$ {service?.price},00</span>
+              <span className="font-serif text-3xl sm:text-4xl font-bold text-gold2">{formatPrice(service.price)}</span>
             </div>
           </div>
 
@@ -89,7 +80,7 @@ export default function Confirm() {
             <Btn onClick={handleConfirm} loading={loading} style={{ height: 56, fontSize: 16 }}>
               {loading ? '' : 'Confirmar Agendamento'}
             </Btn>
-            <Btn variant="secondary" onClick={() => nav(-1 as any)} style={{ height: 56, fontSize: 16 }}>Alterar Dados</Btn>
+            <Btn variant="secondary" onClick={() => nav(-1)} style={{ height: 56, fontSize: 16 }}>Alterar Dados</Btn>
           </div>
         </div>
       </div>

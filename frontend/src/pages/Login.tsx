@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { Inp, Btn } from '../ui';
-import { C } from '../data/catalog';
+import { C } from '../theme';
 import { IconScissors, IconEye, IconEyeOff } from '../ui/Icons';
 
 export default function Login() {

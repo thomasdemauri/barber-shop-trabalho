@@ -1,45 +1,43 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAppointments } from '../hooks/useAppointments';
-import { C, SERVICES } from '../data/catalog';
+import { adminApi } from '../api/endpoints';
+import type { ApiUser, Appointment } from '../api/types';
+import { STATUS_COLORS, STATUS_LABEL } from '../lib/appointment-status';
+import { newestFirst, revenue } from '../lib/appointments';
+import { dateParts, MONTH_ABBR } from '../lib/dates';
+import { formatPrice, initials } from '../lib/format';
+import { C } from '../theme';
 import { IconSearch, IconUser, IconMail, IconClock, IconScissors, IconX } from '../ui/Icons';
-import { api } from '../services/api';
 
-const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const HISTORY_LIMIT = 10;
 
 function formatDate(iso: string) {
   const d = new Date(iso);
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `${d.getDate()} ${MONTH_ABBR[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 export default function AdminClientes() {
   const { appointments } = useAppointments();
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
-  useEffect(() => { void api<any[]>('/admin/users').then(setAllUsers).catch(() => setAllUsers([])); }, []);
-
-  const clients = useMemo(() => {
-    return allUsers
-      .filter((u: any) => u.role === 'CLIENT')
-      .sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
-  }, [allUsers]);
+  const [clients, setClients] = useState<ApiUser[]>([]);
+  useEffect(() => { adminApi.clients().then(setClients).catch(() => setClients([])); }, []);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return clients;
     const q = search.toLowerCase();
-    return clients.filter((u: any) =>
-      (u.name || '').toLowerCase().includes(q) ||
-      (u.email || '').toLowerCase().includes(q) ||
-      (u.phone || '').includes(q)
+    return clients.filter(u =>
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      (u.phone ?? '').includes(q)
     );
   }, [clients, search]);
 
   const clientAppts = useMemo(() => {
-    const map = new Map<string, any[]>();
-    appointments.forEach(a => {
-      if (!map.has(a.usuario_id)) map.set(a.usuario_id, []);
-      map.get(a.usuario_id)!.push(a);
-    });
+    const map = new Map<string, Appointment[]>();
+    for (const appointment of newestFirst(appointments)) {
+      map.set(appointment.client.id, [...(map.get(appointment.client.id) ?? []), appointment]);
+    }
     return map;
   }, [appointments]);
 
@@ -47,13 +45,7 @@ export default function AdminClientes() {
     const apps = clientAppts.get(clientId) || [];
     const total = apps.length;
     const completed = apps.filter(a => a.status !== 'canceled').length;
-    const lastVisit = apps.length > 0
-      ? apps.reduce((latest, a) => a.data_hora > latest.data_hora ? a : latest, apps[0])
-      : null;
-    const totalSpent = apps
-      .filter(a => a.status !== 'canceled')
-      .reduce((sum, a) => sum + (SERVICES.find(s => String(s.id) === a.servico_id)?.price ?? 0), 0);
-    return { total, completed, lastVisit, totalSpent };
+    return { total, completed, totalSpent: revenue(apps) };
   }
 
   return (
@@ -94,15 +86,10 @@ export default function AdminClientes() {
             </p>
           </div>
         ) : (
-          filtered.map((client: any) => {
+          filtered.map(client => {
             const isOpen = expandedId === client.id;
             const stats = getStats(client.id);
-            const initials = (client.name || '??')
-              .split(' ')
-              .map((s: string) => s[0])
-              .slice(0, 2)
-              .join('')
-              .toUpperCase();
+            const history = clientAppts.get(client.id) ?? [];
 
             return (
               <div key={client.id} className="rounded-2xl overflow-hidden"
@@ -113,12 +100,12 @@ export default function AdminClientes() {
                   {/* Avatar */}
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-sans text-sm font-bold"
                     style={{ background: `${C.gold}20`, color: C.gold2 }}>
-                    {initials}
+                    {initials(client.name)}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-sans text-sm font-bold text-cream truncate">{client.name || 'Sem nome'}</div>
+                    <div className="font-sans text-sm font-bold text-cream truncate">{client.name}</div>
                     <div className="flex items-center gap-3 mt-0.5">
                       {client.email && (
                         <span className="font-sans text-xs" style={{ color: C.cream3 }}>
@@ -139,7 +126,7 @@ export default function AdminClientes() {
                     </div>
                     <div className="w-px h-6" style={{ background: C.b1 }} />
                     <div className="text-center">
-                      <div className="font-sans text-sm font-bold tabular-nums" style={{ color: C.gold2 }}>R$ {stats.totalSpent}</div>
+                      <div className="font-sans text-sm font-bold tabular-nums" style={{ color: C.gold2 }}>{formatPrice(stats.totalSpent)}</div>
                       <div className="font-sans text-[9px] uppercase tracking-wider" style={{ color: C.cream3 }}>Gasto</div>
                     </div>
                   </div>
@@ -154,66 +141,59 @@ export default function AdminClientes() {
                     {/* Client details */}
                     <div className="mb-4 rounded-xl p-3 font-sans text-sm space-y-1.5" style={{ background: C.s3, color: C.cream }}>
                       <div className="flex items-center gap-2">
-                        <IconMail size={13} style={{ color: C.cream3 }} /> {client.email || 'Sem email'}
+                        <IconMail size={13} style={{ color: C.cream3 }} /> {client.email}
                       </div>
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>
                         Telefone: {client.phone || 'Não informado'}
                       </div>
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>
-                        Cliente desde: {client.createdAt ? formatDate(client.createdAt) : 'N/A'}
+                        Cliente desde: {formatDate(client.createdAt)}
                       </div>
                       <div className="flex items-center gap-2 text-xs" style={{ color: C.cream3 }}>
                         <IconScissors size={11} /> {stats.total} agendamento{stats.total !== 1 ? 's' : ''} · {stats.completed} concluído{stats.completed !== 1 ? 's' : ''}
                       </div>
                       {stats.totalSpent > 0 && (
                         <div className="flex items-center gap-2 text-xs" style={{ color: C.gold2 }}>
-                          Total gasto: R$ {stats.totalSpent},00
+                          Total gasto: {formatPrice(stats.totalSpent)}
                         </div>
                       )}
                     </div>
 
                     {/* Appointment history */}
-                    {(clientAppts.get(client.id) || []).length > 0 && (
+                    {history.length > 0 && (
                       <>
                         <div className="mb-2 flex items-center gap-1.5 font-sans text-[11px] font-semibold uppercase tracking-wider" style={{ color: C.cream3 }}>
                           <IconClock size={13} /> Histórico de agendamentos
                         </div>
                         <div className="flex flex-col gap-2">
-                          {(clientAppts.get(client.id) || [])
-                            .sort((a: any, b: any) => b.data_hora.localeCompare(a.data_hora))
-                            .slice(0, 10)
-                            .map((appt: any) => {
-                              const svc = SERVICES.find(s => String(s.id) === appt.servico_id);
-                              const dateStr = formatDate(appt.data_hora);
-                              const timeStr = appt.data_hora.slice(11, 16);
-                              const statusColor = appt.status === 'confirmed' ? '#4a9d6e' : appt.status === 'pending' ? '#d4a84c' : '#c05050';
-                              const statusLabel = appt.status === 'confirmed' ? 'Confirmado' : appt.status === 'pending' ? 'Pendente' : 'Cancelado';
+                          {history.slice(0, HISTORY_LIMIT).map(appt => {
+                              const statusColor = STATUS_COLORS[appt.status];
                               return (
                                 <div key={appt.id} className="flex items-center gap-3 rounded-xl px-3 py-2.5"
                                   style={{ background: C.s2, border: `1px solid ${C.b1}` }}>
                                   <div className="flex-1 min-w-0">
-                                    <div className="font-sans text-xs font-semibold text-cream truncate">{svc?.name || `Serviço #${appt.servico_id}`}</div>
+                                    <div className="font-sans text-xs font-semibold text-cream truncate">{appt.service.name}</div>
                                     <div className="font-sans text-[10px]" style={{ color: C.cream3 }}>
-                                      {dateStr} · {timeStr}
+                                      {formatDate(appt.startsAt)} · {dateParts(appt.startsAt).time}
                                     </div>
                                   </div>
                                   <span className="font-sans text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
                                     style={{ background: `${statusColor}20`, color: statusColor, border: `1px solid ${statusColor}44` }}>
-                                    {statusLabel}
+                                    {STATUS_LABEL[appt.status]}
                                   </span>
                                 </div>
                               );
                             })}
                         </div>
-                        {(clientAppts.get(client.id) || []).length > 10 && (
+                        {history.length > HISTORY_LIMIT && (
                           <p className="mt-2 font-sans text-[11px] text-center" style={{ color: C.cream3 }}>
-                            + {(clientAppts.get(client.id) || []).length - 10} agendamento{(clientAppts.get(client.id) || []).length - 10 > 1 ? 's' : ''} anterior{(clientAppts.get(client.id) || []).length - 10 > 1 ? 'es' : ''}
+                            + {history.length - HISTORY_LIMIT} agendamento(s) anterior(es)
                           </p>
                         )}
                       </>
                     )}
 
-                    {(clientAppts.get(client.id) || []).length === 0 && (
+                    {history.length === 0 && (
                       <div className="rounded-xl p-4 text-center font-sans text-xs" style={{ background: C.s3, color: C.cream3 }}>
                         Nenhum agendamento encontrado
                       </div>

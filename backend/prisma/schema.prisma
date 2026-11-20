@@ -32,6 +32,7 @@ model User {
   appointments Appointment[]
   barber       Barber?
   preferences  UserPreference?
+  passwordResets PasswordResetToken[]
 }
 
 model Barber {
@@ -74,7 +75,7 @@ model Schedule {
 model Appointment {
   id        String            @id @default(cuid())
   userId    String
-  barberId  String?
+  barberId  String
   serviceId String
   startsAt  DateTime
   endsAt    DateTime
@@ -83,11 +84,12 @@ model Appointment {
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
   user      User              @relation(fields: [userId], references: [id])
-  barber    Barber?           @relation(fields: [barberId], references: [id])
+  barber    Barber            @relation(fields: [barberId], references: [id])
   service   Service           @relation(fields: [serviceId], references: [id])
 
   @@index([startsAt, endsAt])
   @@index([userId, status])
+  @@index([barberId, startsAt])
 }
 
 model UserPreference {
@@ -100,4 +102,20 @@ model UserPreference {
   haircutPreferences Json?
   notificationPreferences Json?
   paymentPreferences Json?
+}
+
+model PasswordResetToken {
+  tokenHash String    @id
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model ShopSettings {
+  id   Int    @id @default(1)
+  name String
 }

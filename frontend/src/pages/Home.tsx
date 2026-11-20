@@ -1,30 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useAppointments } from '../hooks/useAppointments';
-import { SERVICES, C } from '../data/catalog';
+import { useCatalog } from '../hooks/useCatalog';
+import { dateParts } from '../lib/dates';
+import { firstName, formatPrice, serviceSummary } from '../lib/format';
+import { upcomingFirst } from '../lib/appointments';
+import { C } from '../theme';
 import { Btn, Badge } from '../ui';
 import { IconScissors, IconCalendar, IconUser, IconZap, IconAward, IconClock } from '../ui/Icons';
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-  return { d: d.getDate(), mon: months[d.getMonth()], time: iso.slice(11, 16) };
-}
 
 export default function Home() {
   const { user } = useAuth();
   const { appointments } = useAppointments();
+  const { services } = useCatalog();
   const nav = useNavigate();
 
-  const myAppointments = user?.tipo === 'barbeiro'
-    ? appointments
-    : appointments.filter(a => a.usuario_id === user?.id);
-
-  const now = new Date();
-  const upcoming = myAppointments.filter(
-    a => a.status !== 'canceled' && new Date(a.data_hora) >= now
-  ).sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime());
-
+  const upcoming = upcomingFirst(appointments, new Date());
   const nextAppt = upcoming[0];
 
   return (
@@ -33,7 +24,7 @@ export default function Home() {
       <div className="mb-8">
         <p className="font-sans text-sm" style={{ color: C.gold }}>Bem-vindo de volta</p>
         <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-cream mt-1">
-          {user?.nome?.split(' ')[0] || 'Cliente'}
+          {firstName(user?.nome, 'Cliente')}
         </h1>
       </div>
 
@@ -41,7 +32,7 @@ export default function Home() {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
         {[
           { icon: IconZap, label: 'Próximos', value: String(upcoming.length), color: C.gold },
-          { icon: IconAward, label: 'Serviços', value: String(SERVICES.length), color: C.gold2 },
+          { icon: IconAward, label: 'Serviços', value: String(services.length), color: C.gold2 },
           { icon: IconClock, label: 'Horários', value: 'Seg–Sáb', color: C.gold3 },
         ].map(({ icon: Icon, label, value, color }) => (
           <div
@@ -66,9 +57,7 @@ export default function Home() {
             </span>
           </div>
           {(() => {
-            const { d, mon, time } = formatDate(nextAppt.data_hora);
-            const svc = SERVICES.find(s => String(s.id) === nextAppt.servico_id);
-            const barberName = nextAppt.barbeiro_nome || 'Primeiro disponível';
+            const { day: d, month: mon, time } = dateParts(nextAppt.startsAt);
             return (
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-12 shrink-0 flex-col items-center justify-center rounded-lg" style={{ background: C.s4, border: `1px solid ${C.b2}` }}>
@@ -76,10 +65,10 @@ export default function Home() {
                   <span className="mt-0.5 font-sans text-[9px] uppercase" style={{ color: C.cream3 }}>{mon}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-sans text-sm font-semibold text-cream truncate">{svc?.name || 'Serviço'}</p>
+                  <p className="font-sans text-sm font-semibold text-cream truncate">{nextAppt.service.name}</p>
                   <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>{time}</p>
                   <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>
-                    <IconUser size={11} className="inline mr-1" />{barberName}
+                    <IconUser size={11} className="inline mr-1" />{nextAppt.barber.name}
                   </p>
                 </div>
                 <Badge status={nextAppt.status} />
@@ -115,7 +104,7 @@ export default function Home() {
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {SERVICES.slice(0, 3).map(svc => (
+          {services.slice(0, 3).map(svc => (
             <button
               key={svc.id}
               className="tap flex items-center gap-3 rounded-xl p-4 transition-all text-left"
@@ -127,9 +116,9 @@ export default function Home() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-sans text-sm font-semibold text-cream truncate">{svc.name}</p>
-                <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>{svc.desc}</p>
+                <p className="font-sans text-xs mt-0.5" style={{ color: C.cream3 }}>{serviceSummary(svc)}</p>
               </div>
-              <span className="font-sans text-sm font-bold shrink-0" style={{ color: C.gold2 }}>R$ {svc.price}</span>
+              <span className="font-sans text-sm font-bold shrink-0" style={{ color: C.gold2 }}>{formatPrice(svc.price)}</span>
             </button>
           ))}
         </div>

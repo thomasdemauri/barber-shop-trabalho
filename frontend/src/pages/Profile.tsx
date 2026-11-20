@@ -7,12 +7,32 @@ import {
   IconUser, IconScissors, IconBell, IconCreditCard,
   IconHelpCircle, IconLogOut, IconChevronRight,
 } from '../ui/Icons';
-import { C } from '../data/catalog';
-import { api } from '../services/api';
+import { errorMessage } from '../api/client';
+import type { Preferences } from '../api/types';
+import { usePreferences } from '../hooks/usePreferences';
+import { C } from '../theme';
 
 // ─── tipos ───────────────────────────────────────────────────────────────────
 
 type ModalType = 'dados' | 'corte' | 'notif' | 'pagamento' | 'ajuda' | null;
+
+type SavePreferences = (changes: Partial<Preferences>) => Promise<void>;
+type PreferencesModalProps<K extends keyof Preferences> = {
+  initial: Preferences[K];
+  onSave: SavePreferences;
+  onClose: () => void;
+};
+
+/** Runs a save, toasts the outcome and closes the modal on success. */
+async function saveAndClose(save: () => Promise<unknown>, success: string, failure: string, onClose: () => void) {
+  try {
+    await save();
+    toast.success(success);
+    onClose();
+  } catch (error) {
+    toast.error(errorMessage(error, failure));
+  }
+}
 
 // ─── componente base de modal ─────────────────────────────────────────────────
 
@@ -101,7 +121,7 @@ function Toggle({ label, sub, value, onChange }: {
 // ─── 1. Dados Pessoais ────────────────────────────────────────────────────────
 
 function ModalDados({ onClose }: { onClose: () => void }) {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const [nome, setNome] = useState(user?.nome || '');
   const [email, setEmail] = useState(user?.email || '');
   const [telefone, setTelefone] = useState(user?.telefone || '');
@@ -114,13 +134,13 @@ function ModalDados({ onClose }: { onClose: () => void }) {
     if (senhaNova && senhaNova !== senhaConf) { toast.error('As senhas não coincidem.'); return; }
     if (senhaNova && senhaNova.length < 6) { toast.error('Senha deve ter ao menos 6 caracteres.'); return; }
 
-    try {
-      await api('/profile', { method: 'PATCH', body: JSON.stringify({ name: nome, email, phone: telefone, ...(senhaNova ? { currentPassword: senhaAtual, password: senhaNova } : {}) }) });
-      toast.success('Dados atualizados com sucesso!');
-      onClose();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar os dados.');
-    }
+    const passwordChange = senhaNova ? { currentPassword: senhaAtual, newPassword: senhaNova } : {};
+    await saveAndClose(
+      () => updateProfile({ name: nome, email, phone: telefone, ...passwordChange }),
+      'Dados atualizados com sucesso!',
+      'Não foi possível salvar os dados.',
+      onClose,
+    );
   };
 
   return (
@@ -157,24 +177,17 @@ function ModalDados({ onClose }: { onClose: () => void }) {
 const ESTILOS = ['Degradê', 'Clássico', 'Moderno', 'Undercut', 'Buzz Cut', 'Pompadour'];
 const BARBA_OPTS = ['Curta', 'Média', 'Longa', 'Sem barba'];
 
-function ModalCorte({ onClose }: { onClose: () => void }) {
-  const PREF_KEY = 'barbershop_prefs_corte';
-  const saved = (() => { try { return JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); } catch { return {}; } })();
+function ModalCorte({ initial, onSave, onClose }: PreferencesModalProps<'haircut'>) {
+  const [estilo, setEstilo] = useState(initial?.style ?? '');
+  const [barba, setBarba] = useState(initial?.beard ?? '');
+  const [obs, setObs] = useState(initial?.notes ?? '');
 
-  const [estilo, setEstilo] = useState<string>(saved.estilo || '');
-  const [barba, setBarba] = useState<string>(saved.barba || '');
-  const [obs, setObs] = useState<string>(saved.obs || '');
-
-  const handleSave = async () => {
-    try {
-      await api('/profile/preferences', { method: 'PATCH', body: JSON.stringify({ haircutPreferences: { estilo, barba, obs } }) });
-      localStorage.setItem(PREF_KEY, JSON.stringify({ estilo, barba, obs }));
-      toast.success('Preferências salvas!');
-      onClose();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar as preferências.');
-    }
-  };
+  const handleSave = () => saveAndClose(
+    () => onSave({ haircut: { style: estilo, beard: barba, notes: obs } }),
+    'Preferências salvas!',
+    'Não foi possível salvar as preferências.',
+    onClose,
+  );
 
   return (
     <Modal title="Preferências de Corte" onClose={onClose}>
@@ -247,26 +260,21 @@ function ModalCorte({ onClose }: { onClose: () => void }) {
 
 // ─── 3. Notificações ──────────────────────────────────────────────────────────
 
-function ModalNotif({ onClose }: { onClose: () => void }) {
-  const NOTIF_KEY = 'barbershop_notif';
-  const saved = (() => { try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}'); } catch { return {}; } })();
+function ModalNotif({ initial, onSave, onClose }: PreferencesModalProps<'notifications'>) {
+  const [confirmacao, setConfirmacao] = useState(initial?.confirmation ?? true);
+  const [lembrete, setLembrete] = useState(initial?.reminder ?? true);
+  const [promocoes, setPromocoes] = useState(initial?.promotions ?? false);
+  const [cancelamento, setCancelamento] = useState(initial?.cancellation ?? true);
+  const [novidades, setNovidades] = useState(initial?.news ?? false);
 
-  const [confirmacao, setConfirmacao] = useState(saved.confirmacao ?? true);
-  const [lembrete, setLembrete] = useState(saved.lembrete ?? true);
-  const [promocoes, setPromocoes] = useState(saved.promocoes ?? false);
-  const [cancelamento, setCancelamento] = useState(saved.cancelamento ?? true);
-  const [novidades, setNovidades] = useState(saved.novidades ?? false);
-
-  const handleSave = async () => {
-    try {
-      await api('/profile/preferences', { method: 'PATCH', body: JSON.stringify({ notificationPreferences: { confirmacao, lembrete, promocoes, cancelamento, novidades } }) });
-      localStorage.setItem(NOTIF_KEY, JSON.stringify({ confirmacao, lembrete, promocoes, cancelamento, novidades }));
-      toast.success('Preferências de notificação salvas!');
-      onClose();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar as notificações.');
-    }
-  };
+  const handleSave = () => saveAndClose(
+    () => onSave({
+      notifications: { confirmation: confirmacao, reminder: lembrete, promotions: promocoes, cancellation: cancelamento, news: novidades },
+    }),
+    'Preferências de notificação salvas!',
+    'Não foi possível salvar as notificações.',
+    onClose,
+  );
 
   return (
     <Modal title="Notificações" onClose={onClose}>
@@ -296,23 +304,16 @@ const METODOS = [
   { id: 'credito', icon: '💳', label: 'Cartão de Crédito', sub: 'Até 3x sem juros' },
 ];
 
-function ModalPagamento({ onClose }: { onClose: () => void }) {
-  const PAG_KEY = 'barbershop_pagamento';
-  const saved = (() => { try { return JSON.parse(localStorage.getItem(PAG_KEY) || '{}'); } catch { return {}; } })();
+function ModalPagamento({ initial, onSave, onClose }: PreferencesModalProps<'payment'>) {
+  const [preferido, setPreferido] = useState(initial?.preferredMethod ?? '');
+  const [pixChave, setPixChave] = useState(initial?.pixKey ?? '');
 
-  const [preferido, setPreferido] = useState<string>(saved.preferido || '');
-  const [pixChave, setPixChave] = useState<string>(saved.pixChave || '');
-
-  const handleSave = async () => {
-    try {
-      await api('/profile/preferences', { method: 'PATCH', body: JSON.stringify({ paymentPreferences: { preferido, pixChave } }) });
-      localStorage.setItem(PAG_KEY, JSON.stringify({ preferido, pixChave }));
-      toast.success('Forma de pagamento salva!');
-      onClose();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível salvar o pagamento.');
-    }
-  };
+  const handleSave = () => saveAndClose(
+    () => onSave({ payment: { preferredMethod: preferido, pixKey: pixChave } }),
+    'Forma de pagamento salva!',
+    'Não foi possível salvar o pagamento.',
+    onClose,
+  );
 
   return (
     <Modal title="Formas de Pagamento" onClose={onClose}>
@@ -453,10 +454,12 @@ function ModalAjuda({ onClose }: { onClose: () => void }) {
 
 export default function Profile() {
   const { user, logout } = useAuth();
+  const { preferences, save } = usePreferences();
   const nav = useNavigate();
   const [modal, setModal] = useState<ModalType>(null);
+  const close = () => setModal(null);
 
-  const items: { Icon: React.FC<any>; label: string; modal: ModalType }[] = [
+  const items: { Icon: typeof IconUser; label: string; modal: ModalType }[] = [
     { Icon: IconUser,        label: 'Dados Pessoais',        modal: 'dados' },
     { Icon: IconScissors,    label: 'Preferências de Corte', modal: 'corte' },
     { Icon: IconBell,        label: 'Notificações',          modal: 'notif' },
@@ -466,11 +469,11 @@ export default function Profile() {
 
   return (
     <>
-      {modal === 'dados'     && <ModalDados     onClose={() => setModal(null)} />}
-      {modal === 'corte'     && <ModalCorte     onClose={() => setModal(null)} />}
-      {modal === 'notif'     && <ModalNotif     onClose={() => setModal(null)} />}
-      {modal === 'pagamento' && <ModalPagamento onClose={() => setModal(null)} />}
-      {modal === 'ajuda'     && <ModalAjuda     onClose={() => setModal(null)} />}
+      {modal === 'dados' && <ModalDados onClose={close} />}
+      {preferences && modal === 'corte' && <ModalCorte initial={preferences.haircut} onSave={save} onClose={close} />}
+      {preferences && modal === 'notif' && <ModalNotif initial={preferences.notifications} onSave={save} onClose={close} />}
+      {preferences && modal === 'pagamento' && <ModalPagamento initial={preferences.payment} onSave={save} onClose={close} />}
+      {modal === 'ajuda' && <ModalAjuda onClose={close} />}
 
       <div className="w-full max-w-8xl mx-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
         <h1 className="mb-6 sm:mb-8 font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-cream">Perfil</h1>
@@ -492,10 +495,10 @@ export default function Profile() {
               </div>
               <div className="min-w-0 lg:mt-2">
                 <p className="mb-0.5 font-serif text-xl sm:text-2xl font-semibold text-cream truncate">
-                  {user?.nome || 'João Silva'}
+                  {user?.nome}
                 </p>
                 <p className="font-sans text-sm text-cream3 truncate">
-                  {user?.email || 'joao.silva@email.com'}
+                  {user?.email}
                 </p>
                 {user?.telefone && (
                   <p className="font-sans text-xs text-cream3 mt-1 truncate">{user.telefone}</p>
