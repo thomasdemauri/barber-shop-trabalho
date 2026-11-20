@@ -35,23 +35,25 @@ async function seedServices() {
   }
 }
 
+type SeedUser = { name: string; email: string; phone: string; role: Role; password: string };
+
+/**
+ * Creates a seed account unless it already exists. Matching on e-mail or phone keeps accounts whose
+ * e-mail (or phone) was changed after seeding, instead of failing on the other unique field.
+ */
+async function findOrCreateUser({ password, ...user }: SeedUser) {
+  const existing = await db.user.findFirst({ where: { OR: [{ email: user.email }, { phone: user.phone }] } });
+  if (existing) return existing;
+  return db.user.create({ data: { ...user, passwordHash: await argon2.hash(password), preferences: { create: {} } } });
+}
+
 async function seedUsers() {
-  for (const { password, ...user } of USERS) {
-    await db.user.upsert({
-      where: { email: user.email },
-      create: { ...user, passwordHash: await argon2.hash(password), preferences: { create: {} } },
-      update: {},
-    });
-  }
+  for (const user of USERS) await findOrCreateUser(user);
 }
 
 async function seedBarbers() {
   for (const { experience, bio, ...user } of BARBERS) {
-    const account = await db.user.upsert({
-      where: { email: user.email },
-      create: { ...user, role: Role.BARBER, passwordHash: await argon2.hash(BARBER_PASSWORD) },
-      update: {},
-    });
+    const account = await findOrCreateUser({ ...user, role: Role.BARBER, password: BARBER_PASSWORD });
     const barber = await db.barber.upsert({
       where: { userId: account.id },
       create: { userId: account.id, experience, bio },
@@ -76,12 +78,8 @@ const DEMO_RANDOM_SEED = 20261120;
 /** Brazilian demo clients plus their agenda (Nov 2026 – Jan 2027). Safe to rerun: existing rows are left untouched. */
 async function seedDemoData() {
   const clientIds: string[] = [];
-  for (const { password, ...client } of DEMO_CLIENTS) {
-    const user = await db.user.upsert({
-      where: { email: client.email },
-      create: { ...client, role: Role.CLIENT, passwordHash: await argon2.hash(password), preferences: { create: {} } },
-      update: {},
-    });
+  for (const client of DEMO_CLIENTS) {
+    const user = await findOrCreateUser({ ...client, role: Role.CLIENT });
     clientIds.push(user.id);
   }
 

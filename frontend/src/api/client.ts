@@ -1,5 +1,5 @@
-const isProduction = import.meta.env.VITE_PROD === 'true';
-export const API_URL = isProduction ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:3000/api');
+/** Always same-origin: Nginx (production) and the Vite dev server proxy `/api` to the backend. */
+export const API_URL = '/api';
 
 const TOKEN_KEY = 'barbershop_token';
 

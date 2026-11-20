@@ -34,7 +34,7 @@ export function mockApi(routes: Record<string, Route> = {}) {
   const calls: RecordedCall[] = [];
 
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
-    const url = new URL(String(input));
+    const url = new URL(String(input), 'http://localhost');
     const path = url.pathname.replace(/^\/api/, '');
     const method = init.method ?? 'GET';
     const body = typeof init.body === 'string' ? JSON.parse(init.body) : undefined;
