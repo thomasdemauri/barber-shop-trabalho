@@ -8,7 +8,8 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a run on main: it may be in the middle of a deploy.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -114,3 +115,102 @@ jobs:
       - name: Stop the stack
         if: always()
         run: docker compose down -v
+
+  deploy:
+    name: Deploy to Azure Container Apps
+    needs: [e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write # OIDC login to Azure, no client secret stored
+    env:
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy registry
+        id: registry
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name registry \
+            --template-file infra/registry.bicep \
+            --query properties.outputs -o json)
+          echo "name=$(jq -r .registryName.value <<<"$outputs")" >> "$GITHUB_OUTPUT"
+          echo "login-server=$(jq -r .loginServer.value <<<"$outputs")" >> "$GITHUB_OUTPUT"
+          echo "identity=$(jq -r .identityName.value <<<"$outputs")" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to the registry
+        run: az acr login --name "${{ steps.registry.outputs.name }}"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend (API + notification worker)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          tags: ${{ steps.registry.outputs.login-server }}/barbershop-backend:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: frontend/Dockerfile
+          push: true
+          tags: ${{ steps.registry.outputs.login-server }}/barbershop-frontend:${{ github.sha }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+      - name: Deploy infrastructure and apps
+        id: apps
+        env:
+          POSTGRES_ADMIN_PASSWORD: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER || 'memory' }}
+          EMAIL_FROM: ${{ vars.EMAIL_FROM || 'Navalha de Ouro <nao-responda@barbearia.test>' }}
+          SEED_DEMO_DATA: ${{ vars.SEED_DEMO_DATA || 'true' }}
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name apps \
+            --template-file infra/main.bicep \
+            --parameters \
+              registryName="${{ steps.registry.outputs.name }}" \
+              identityName="${{ steps.registry.outputs.identity }}" \
+              imageTag="$IMAGE_TAG" \
+              postgresAdminPassword="$POSTGRES_ADMIN_PASSWORD" \
+              jwtSecret="$JWT_SECRET" \
+              rabbitmqPassword="$RABBITMQ_PASSWORD" \
+              brevoApiKey="$BREVO_API_KEY" \
+              emailProvider="$EMAIL_PROVIDER" \
+              emailFrom="$EMAIL_FROM" \
+              seedDemoData="$SEED_DEMO_DATA" \
+            --query properties.outputs -o json)
+          url=$(jq -r .frontendUrl.value <<<"$outputs")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### Deployed :rocket:" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 30); do
+            curl -fs "${{ steps.apps.outputs.url }}/api/catalog/services" > /dev/null && exit 0
+            sleep 10
+          done
+          echo "Deployed app did not answer" && exit 1

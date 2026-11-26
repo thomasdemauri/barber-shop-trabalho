@@ -38,6 +38,7 @@ pure helpers in `src/lib/`, and reusable screen pieces in `src/components/`.
 | Backend tests | Type check and the Jasmine suite, including the integration specs against PostgreSQL and RabbitMQ service containers |
 | Frontend tests | ESLint, Vitest and the production build |
 | End-to-end tests | The whole docker-compose stack plus Playwright (`e2e/`): a client signs up and books with Carlos, the barber confirms it in the agenda, and the worker sends the confirmation e-mail (simulated) |
+| Deploy to Azure | Pushes to `main` only, after the tests pass: builds the images and deploys them to Azure Container Apps with Bicep (see [infra/README.md](infra/README.md)) |
 
 Run the end-to-end tests locally:
 
