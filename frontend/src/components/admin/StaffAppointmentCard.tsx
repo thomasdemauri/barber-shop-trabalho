@@ -1,5 +1,6 @@
 import type { Appointment } from '../../api/types';
 import type { StaffDecision } from '../../contexts/appointments';
+import { useAuth } from '../../hooks/useAuth';
 import { STATUS_COLORS, STATUS_LABEL } from '../../lib/appointment-status';
 import { dateParts } from '../../lib/dates';
 import { formatPrice } from '../../lib/format';
@@ -24,6 +25,7 @@ export function StaffAppointmentCard({ appointment, badge, open, busy, now, onTo
   const isPast = new Date(appointment.startsAt) < now;
   const color = STATUS_COLORS[status];
   const isOpenForDecision = status === 'pending' || status === 'confirmed';
+  const showBarber = useAuth().user?.role === 'ADMIN';
 
   return (
     <div
@@ -52,14 +54,20 @@ export function StaffAppointmentCard({ appointment, badge, open, busy, now, onTo
               {STATUS_LABEL[status]}
             </span>
           </div>
+          {badge === 'date' && (
+            <div className="font-sans text-xs" style={{ color: C.cream3 }}>
+              <IconClock size={11} className="inline mr-1" />{time} · {service.durationMinutes} min
+            </div>
+          )}
           <div className="font-sans text-xs" style={{ color: C.cream3 }}>
-            {badge === 'date'
-              ? <><IconClock size={11} className="inline mr-1" />{time} · {service.durationMinutes} min</>
-              : <><IconUser size={11} className="inline mr-1" />{client.name}</>}
+            <IconUser size={11} className="inline mr-1" />{client.name}
           </div>
-          <div className="font-sans text-[11px]" style={{ color: C.cream3 }}>
-            <IconScissors size={11} className="inline mr-1" />{barber.name}
-          </div>
+          {/* A barber only sees their own bookings, so their name would repeat on every card. */}
+          {showBarber && (
+            <div className="font-sans text-[11px]" style={{ color: C.cream3 }}>
+              <IconScissors size={11} className="inline mr-1" />{barber.name}
+            </div>
+          )}
           <div className="font-sans text-sm font-bold tabular-nums mt-0.5" style={{ color: C.gold2 }}>{formatPrice(service.price)}</div>
         </div>
 
