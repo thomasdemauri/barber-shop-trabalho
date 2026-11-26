@@ -9,9 +9,9 @@ Every push to `main` that passes the tests is deployed to Azure Container Apps b
 | docker-compose service | Azure resource |
 | --- | --- |
 | `postgres` | Azure Database for PostgreSQL Flexible Server (B1ms, TLS required) |
-| `rabbitmq` | Container app `rabbitmq`, internal TCP ingress on port 5672 |
 | `backend` | Container app `backend`, internal HTTP ingress (not public) |
-| `notification-worker` | Container app `notification-worker`, same image, no ingress |
+| `rabbitmq` | Extra container in the `backend` app, reached on `localhost:5672` |
+| `notification-worker` | Extra container in the `backend` app, same image as the API |
 | `frontend` | Container app `frontend`, the only public URL; Nginx proxies `/api` to the backend |
 
 Local development is unchanged: `docker compose up` still runs everything, including its own Postgres.
@@ -82,6 +82,7 @@ The deployed URL appears in the job summary.
 ## Notes
 
 - **Cost:** about US$13/month for Postgres B1ms, about US$5/month for ACR Basic, plus Container Apps usage. Delete the resource group when you no longer need it: `az group delete -n rg-barbershop`.
+- **Why RabbitMQ is a sidecar:** internal TCP ingress does not route without a custom VNet, so the broker shares the backend app and its `localhost`. New environments also default to Express mode, which rejects TCP ingress; `main.bicep` pins `environmentMode: 'WorkloadProfiles'`.
 - **RabbitMQ has no persistent volume.** Messages still queued when the broker restarts are lost; appointments are stored in Postgres.
 - **Migrations** run when the backend starts (`prisma migrate deploy`), so the backend runs a single replica.
 - **Postgres firewall:** the server accepts connections from Azure-hosted services, because Container Apps on the consumption plan has no fixed outbound IP. Connections still require TLS and the admin password.

@@ -153,63 +153,16 @@ resource postgresAllowAzure 'Microsoft.DBforPostgreSQL/flexibleServers/firewallR
   }
 }
 
-// ---------- RabbitMQ (internal TCP only) ----------
-resource rabbitmq 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'rabbitmq'
-  location: location
-  properties: {
-    environmentId: environment.id
-    configuration: {
-      ingress: {
-        external: false
-        transport: 'tcp'
-        targetPort: 5672
-        exposedPort: 5672
-      }
-      secrets: [
-        {
-          name: 'rabbitmq-password'
-          value: rabbitmqPassword
-        }
-      ]
-    }
-    template: {
-      containers: [
-        {
-          name: 'rabbitmq'
-          image: 'docker.io/library/rabbitmq:3-management-alpine'
-          env: [
-            {
-              name: 'RABBITMQ_DEFAULT_USER'
-              value: rabbitmqUser
-            }
-            {
-              name: 'RABBITMQ_DEFAULT_PASS'
-              secretRef: 'rabbitmq-password'
-            }
-          ]
-          resources: {
-            cpu: json('0.5')
-            memory: '1Gi'
-          }
-        }
-      ]
-      // A single broker; never scale to zero or the worker loses its queue.
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
-      }
-    }
-  }
-}
-
-var rabbitmqUrl = 'amqp://${rabbitmqUser}:${uriComponent(rabbitmqPassword)}@${rabbitmq.properties.configuration.ingress.fqdn}:5672'
+// RabbitMQ and the notification worker run as extra containers in the backend app.
+// Containers of one app share localhost, so the broker needs no TCP ingress
+// (internal TCP ingress does not route without a custom VNet).
+var rabbitmqUrl = 'amqp://${rabbitmqUser}:${uriComponent(rabbitmqPassword)}@localhost:5672'
 var databaseUrl = 'postgresql://${postgresAdminLogin}:${uriComponent(postgresAdminPassword)}@${postgres.properties.fullyQualifiedDomainName}:5432/${postgresDatabaseName}?sslmode=require'
 
 // The public URL is known up front: <app name>.<environment default domain>.
 var frontendUrl = 'https://frontend.${environment.properties.defaultDomain}'
 
-// ---------- Backend API (internal HTTP, reached through the frontend's Nginx) ----------
+// ---------- Backend app: API + RabbitMQ + notification worker ----------
 resource backend 'Microsoft.App/containerApps@2024-03-01' = {
   name: 'backend'
   location: location
@@ -242,6 +195,15 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'rabbitmq-url'
           value: rabbitmqUrl
         }
+        {
+          name: 'rabbitmq-password'
+          value: rabbitmqPassword
+        }
+        {
+          // Container Apps rejects empty secret values.
+          name: 'brevo-api-key'
+          value: empty(brevoApiKey) ? 'not-set' : brevoApiKey
+        }
       ]
     }
     template: {
@@ -265,40 +227,22 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
             memory: '1Gi'
           }
         }
-      ]
-      // One replica: the container runs `prisma migrate deploy` + seed on start.
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
-      }
-    }
-  }
-}
-
-// ---------- Notification worker (no ingress, consumes RabbitMQ) ----------
-resource worker 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'notification-worker'
-  location: location
-  identity: appIdentity
-  properties: {
-    environmentId: environment.id
-    configuration: {
-      registries: registries
-      secrets: [
         {
-          name: 'rabbitmq-url'
-          value: rabbitmqUrl
+          // No persistent volume: messages still queued when the broker restarts are lost.
+          name: 'rabbitmq'
+          image: 'docker.io/library/rabbitmq:3-management-alpine'
+          env: [
+            { name: 'RABBITMQ_DEFAULT_USER', value: rabbitmqUser }
+            { name: 'RABBITMQ_DEFAULT_PASS', secretRef: 'rabbitmq-password' }
+          ]
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
         }
         {
-          // Container Apps rejects empty secret values.
-          name: 'brevo-api-key'
-          value: empty(brevoApiKey) ? 'not-set' : brevoApiKey
-        }
-      ]
-    }
-    template: {
-      containers: [
-        {
+          // Same image as the API, different entrypoint. Exits (and is restarted)
+          // until the broker accepts connections.
           name: 'notification-worker'
           image: backendImage
           command: ['node', 'dist/src/worker.js']
@@ -320,6 +264,7 @@ resource worker 'Microsoft.App/containerApps@2024-03-01' = {
           }
         }
       ]
+      // One replica: the API runs `prisma migrate deploy` + seed on start, and the broker is single-node.
       scale: {
         minReplicas: 1
         maxReplicas: 1
